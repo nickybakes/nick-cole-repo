@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Users;
 //Nick Baker
 
 /// <summary>
@@ -10,6 +12,7 @@ using Mirror;
 public class NeonHeightsLobbyClient : NetworkBehaviour
 {
     public GameObject PlayerLobbyCursorPrefab;
+    private LobbyInput lobbyInput;
     private NeonHeightsLobbyManager lobbyManager;
 
     //this array and list keeps track of what controllers (including keyboard) have been used on this client in this game session
@@ -24,6 +27,13 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
     {
         lobbyManager = GameObject.FindObjectOfType<NeonHeightsLobbyManager>();
         playerCursors = new List<GameObject>();
+        lobbyInput = new LobbyInput();
+        //lobbyInput.Client.AddKeyboardPlayer.performed += AddKeyboardPlayer_performed;
+    }
+
+    public void AddKeyboardPlayer_performed()
+    {
+        connectionToServer.Send(new JoinGameMessage());
     }
 
     // Update is called once per frame
@@ -32,11 +42,14 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            //CmdAddPlayerLobbyCursor_Server();
-            connectionToServer.Send(new JoinGameMessage());
-        }
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    //CmdAddPlayerLobbyCursor_Server();
+        //    connectionToServer.Send(new JoinGameMessage());
+        //}
+        //InputUser.PerformPairingWithDevice(new Gamepad());
+        //Gamepad g = new Gamepad();
+        //int i = g.deviceId;
     }
 
     [Command]

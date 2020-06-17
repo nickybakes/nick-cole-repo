@@ -1,0 +1,52 @@
+{
+    "name": "LobbyInput",
+    "maps": [
+        {
+            "name": "Client",
+            "id": "f8c37598-27bf-472f-b366-db5de0ab00a9",
+            "actions": [
+                {
+                    "name": "Add Keyboard Player",
+                    "type": "Button",
+                    "id": "b1a2e98b-1d5b-4cbf-978c-d0a1fa07a463",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Press(behavior=2)"
+                },
+                {
+                    "name": "Add Gamepad Player",
+                    "type": "Button",
+                    "id": "74c5c675-9b65-41e3-a640-3add72e7110f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Press(behavior=2)"
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "df4afb81-8e2e-404d-bd67-8a3163596881",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Add Keyboard Player",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e4909635-c90e-4a4a-b705-1ef3799999e4",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Add Gamepad Player",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
