@@ -38,14 +38,9 @@ public class PlayerLobbyCursor : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isLocalPlayer)
+        if (!hasAuthority)
             return;
 
-        Debug.Log("s");
-    }
-
-    public void UpdateInput()
-    {
         if (Input.GetKey(KeyCode.W))
         {
             transform.position = new Vector3(transform.position.x, transform.position.y + 5, 0);
@@ -62,5 +57,10 @@ public class PlayerLobbyCursor : NetworkBehaviour
         {
             transform.position = new Vector3(transform.position.x + 5, transform.position.y, 0);
         }
+    }
+
+    public void UpdateInput()
+    {
+
     }
 }

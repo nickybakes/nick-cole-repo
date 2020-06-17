@@ -7,7 +7,7 @@ using Mirror;
 /// <summary>
 /// This 
 /// </summary>
-public class NeonHeightsLobbyManager : NetworkRoomManager
+public class NeonHeightsLobbyManager : NetworkBehaviour
 {
     public enum TeamJoined
     {
@@ -30,29 +30,36 @@ public class NeonHeightsLobbyManager : NetworkRoomManager
         Electra
     }
 
+    public GameObject PlayerLobbyCursorPrefab;
     private const int MAX_PLAYERS = 8;
 
-    private int numberOfPlayers;
-    private bool[] playersAdded;
-    public int[] playerConnectionIDs;
-    public TeamJoined[] playerTeams;
-    public SelectedCharacter[] selectedCharacters;
+    [SyncVar] private int numberOfPlayers;
+    [SyncVar] private SyncListBool playersAdded;
+    [SyncVar] public SyncListInt playerConnectionIDs;
+    [SyncVar] public SyncListInt playerTeams;
+    [SyncVar] public SyncListInt selectedCharacters;
 
     // Start is called before the first frame update
     void Start()
     {
-        base.Start();
-        playersAdded = new bool[MAX_PLAYERS];
-        playerConnectionIDs = new int[MAX_PLAYERS];
-        playerTeams = new TeamJoined[MAX_PLAYERS];
-        selectedCharacters = new SelectedCharacter[MAX_PLAYERS];
+        playersAdded = new SyncListBool();
+        playerConnectionIDs = new SyncListInt();
+        playerTeams = new SyncListInt();
+        selectedCharacters = new SyncListInt();
 
         for (int i = 0; i < MAX_PLAYERS; i++)
         {
-            selectedCharacters[i] = SelectedCharacter.Unassigned;
+            playersAdded.Add(false);
+            playerTeams.Add((int)TeamJoined.Unassigned);
+            selectedCharacters.Add((int) SelectedCharacter.Unassigned);
         }
     }
 
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        NetworkServer.RegisterHandler<JoinGameMessage>(OnAddPlayer);
+    }
 
     private int GetNextAvailableSlot()
     {
@@ -64,7 +71,20 @@ public class NeonHeightsLobbyManager : NetworkRoomManager
         throw new System.Exception("Game is full!");
     }
 
-    public int AttemptAddPlayer(NeonHeightsLobbyClient client)
+    void OnAddPlayer(NetworkConnection conn, JoinGameMessage message)
+    {
+        int playerIndex = AttemptAddPlayer();
+        if (playerIndex != -1)
+        {
+            GameObject spawnedCursor = Instantiate(PlayerLobbyCursorPrefab);
+            spawnedCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(playerIndex);
+            //NetworkServer.AddPlayerForConnection(conn, spawnedCursor);
+            NetworkServer.Spawn(spawnedCursor);
+            spawnedCursor.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
+        }
+    }
+
+    public int AttemptAddPlayer()
     {
         try
         {
@@ -81,9 +101,16 @@ public class NeonHeightsLobbyManager : NetworkRoomManager
 
 
 
+
+
     // Update is called once per frame
     void Update()
     {
         
     }
+}
+
+public class JoinGameMessage : MessageBase
+{
+    public int playerIndex;
 }

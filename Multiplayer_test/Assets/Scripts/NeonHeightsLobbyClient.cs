@@ -7,7 +7,7 @@ using Mirror;
 /// <summary>
 /// This stores the players joined from a client
 /// </summary>
-public class NeonHeightsLobbyClient : NetworkRoomPlayer
+public class NeonHeightsLobbyClient : NetworkBehaviour
 {
     public GameObject PlayerLobbyCursorPrefab;
     private NeonHeightsLobbyManager lobbyManager;
@@ -22,8 +22,6 @@ public class NeonHeightsLobbyClient : NetworkRoomPlayer
     // Start is called before the first frame update
     void Start()
     {
-        base.Start();
-        ClientScene.RegisterPrefab(PlayerLobbyCursorPrefab);
         lobbyManager = GameObject.FindObjectOfType<NeonHeightsLobbyManager>();
         playerCursors = new List<GameObject>();
     }
@@ -34,27 +32,28 @@ public class NeonHeightsLobbyClient : NetworkRoomPlayer
         if (!isLocalPlayer)
             return;
 
-        foreach(GameObject playerCursor in playerCursors)
-        {
-            playerCursor.GetComponent<PlayerLobbyCursor>().UpdateInput();
-        }
-
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            int playerIndex = lobbyManager.AttemptAddPlayer(this);
-            if (playerIndex != -1)
-            {
-                CmdAddPlayerLobbyCursor_Server(playerIndex);
-            }
+            //CmdAddPlayerLobbyCursor_Server();
+            connectionToServer.Send(new JoinGameMessage());
         }
     }
 
     [Command]
-    private void CmdAddPlayerLobbyCursor_Server(int playerIndex)
+    private void CmdAddPlayerLobbyCursor_Server()
     {
+        //int playerIndex = lobbyManager.AttemptAddPlayer(this);
+        //if (playerIndex != -1)
+        //{
+        //    GameObject spawnedCursor = Instantiate(PlayerLobbyCursorPrefab);
+        //    spawnedCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(playerIndex);
+        //    playerCursors.Add(spawnedCursor);
+        //    NetworkServer.AddPlayerForConnection(connectionToServer, spawnedCursor);
+        //    NetworkServer.Spawn(spawnedCursor);
+        //}
         GameObject spawnedCursor = Instantiate(PlayerLobbyCursorPrefab);
-        spawnedCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(playerIndex);
-        playerCursors.Add(spawnedCursor);
-        NetworkServer.Spawn(spawnedCursor, connectionToClient);
+        //NetworkServer.AddPlayerForConnection(conn, spawnedCursor);
+        NetworkServer.Spawn(spawnedCursor);
+        spawnedCursor.GetComponent<NetworkIdentity>().AssignClientAuthority(connectionToClient);
     }
 }
