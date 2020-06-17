@@ -220,6 +220,9 @@ MonoBehaviour:
   GameplayScene: Assets/Scenes/TempInGameScene.unity
   allPlayersReady: 0
   roomSlots: []
+  playerConnectionIDs: 
+  playerTeams: 
+  selectedCharacters: 
 --- !u!4 &896070234
 Transform:
   m_ObjectHideFlags: 0

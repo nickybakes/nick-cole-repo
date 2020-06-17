@@ -13,12 +13,17 @@ public class PlayerLobbyCursor : NetworkBehaviour
     public Image cursorImage;
     public Text usernameText;
 
+    [SyncVar]
     private int playerIndex;
 
     // Start is called before the first frame update
     void Start()
     {
         transform.SetParent(GameObject.FindObjectOfType<Canvas>().transform);
+        playerNumberText.text = "P" + (playerIndex + 1);
+        playerNumberTextShadow.text = "P" + (playerIndex + 1);
+        cursorImage.color = cursorColors[playerIndex];
+        usernameText.text = "player " + (playerIndex + 1);
     }
 
     public void InitializePlayerCursor(int playerIndex)
@@ -33,10 +38,14 @@ public class PlayerLobbyCursor : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!isLocalPlayer)
+            return;
 
-        //if (!isLocalPlayer)
-        //    return;
-        //Debug.Log("s");
+        Debug.Log("s");
+    }
+
+    public void UpdateInput()
+    {
         if (Input.GetKey(KeyCode.W))
         {
             transform.position = new Vector3(transform.position.x, transform.position.y + 5, 0);
