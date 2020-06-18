@@ -36,7 +36,7 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
             return;
 
         JoinGameMessage message = new JoinGameMessage();
-        message.keyboard = Keyboard.current;
+        message.keyboardControlled = true;
         connectionToServer.Send(message);
     }
 
@@ -46,7 +46,7 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
             return;
 
         JoinGameMessage message = new JoinGameMessage();
-        message.gamepad = Gamepad.current;
+        message.gamepadDeviceId = Gamepad.current.deviceId;
         connectionToServer.Send(message);
     }
 
@@ -55,6 +55,19 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
     {
         if (!isLocalPlayer)
             return;
+
+        if (!Application.isFocused)
+            return;
+
+        for(int i = 0; i < Gamepad.all.Count; i++)
+        {
+            if (Gamepad.all[i].buttonSouth.wasPressedThisFrame)
+            {
+                JoinGameMessage message = new JoinGameMessage();
+                message.gamepadDeviceId = i;
+                connectionToServer.Send(message);
+            }
+        }
 
         //if (Input.GetKeyDown(KeyCode.Space))
         //{

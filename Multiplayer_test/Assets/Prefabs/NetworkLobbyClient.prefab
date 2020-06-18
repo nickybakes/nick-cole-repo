@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6781134222470372875}
   - component: {fileID: 6781134222470372874}
   - component: {fileID: 1826281639037341899}
-  - component: {fileID: 6062338262850641593}
   m_Layer: 0
   m_Name: NetworkLobbyClient
   m_TagString: Untagged
@@ -65,53 +64,3 @@ MonoBehaviour:
   syncInterval: 0.1
   PlayerLobbyCursorPrefab: {fileID: 0}
   playerCursors: []
---- !u!114 &6062338262850641593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6781134222470372876}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: a7b9e04b4bb7fd543ba4b8506c7c2332,
-    type: 3}
-  m_NotificationBehavior: 0
-  m_UIInputModule: {fileID: 0}
-  m_DeviceLostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_DeviceRegainedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ControlsChangedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ActionEvents:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1826281639037341899}
-        m_MethodName: AddKeyboardPlayer_performed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-    m_ActionId: b1a2e98b-1d5b-4cbf-978c-d0a1fa07a463
-    m_ActionName: Client/Add Keyboard Player[/Keyboard/space]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 74c5c675-9b65-41e3-a640-3add72e7110f
-    m_ActionName: Client/Add Gamepad Player[/XInputControllerWindows/buttonSouth,/XInputControllerWindows1/buttonSouth]
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
-  m_DefaultActionMap: Client
-  m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}

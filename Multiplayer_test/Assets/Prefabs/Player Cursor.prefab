@@ -276,7 +276,6 @@ GameObject:
   - component: {fileID: 7100962875590565106}
   - component: {fileID: 7100962875590565110}
   - component: {fileID: 7100962875590565108}
-  - component: {fileID: -1525978201113168578}
   m_Layer: 5
   m_Name: Player Cursor
   m_TagString: Untagged
@@ -363,7 +362,7 @@ MonoBehaviour:
   playerNumberTextShadow: {fileID: 7100962874517044791}
   cursorImage: {fileID: 7100962874975023877}
   usernameText: {fileID: 7100962874344604183}
-  playerInput: {fileID: -1525978201113168578}
+  playerInput: {fileID: 0}
 --- !u!114 &7100962875590565108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -382,49 +381,6 @@ MonoBehaviour:
   localPositionSensitivity: 0.01
   localRotationSensitivity: 0.01
   localScaleSensitivity: 0.01
---- !u!114 &-1525978201113168578
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7100962875590565104}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: d7300316587a3c5429c9e9deedda6405,
-    type: 3}
-  m_NotificationBehavior: 0
-  m_UIInputModule: {fileID: 0}
-  m_DeviceLostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_DeviceRegainedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ControlsChangedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ActionEvents:
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 92d866e7-4bd1-4a22-8903-1a61d58bad5d
-    m_ActionName: Cursor/Move[/XInputControllerWindows/leftStick,/XInputControllerWindows1/leftStick,/XInputControllerWindows/dpad,/XInputControllerWindows1/dpad,/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 75fd5a70-a69f-4723-b391-2fa1e4cbc612
-    m_ActionName: Cursor/Select[/XInputControllerWindows/buttonSouth,/XInputControllerWindows1/buttonSouth,/Keyboard/space,/Keyboard/enter]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 786cbfe3-14fa-4f76-a577-6fe91f512bb1
-    m_ActionName: Cursor/Leave[/XInputControllerWindows/buttonEast,/XInputControllerWindows1/buttonEast,/Keyboard/escape]
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
-  m_DefaultActionMap: Cursor
-  m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}
 --- !u!1 &7100962875673212303
 GameObject:
   m_ObjectHideFlags: 0
