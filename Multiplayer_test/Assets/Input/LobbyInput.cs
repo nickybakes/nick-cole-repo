@@ -24,7 +24,7 @@ public class @LobbyInput : IInputActionCollection, IDisposable
                     ""id"": ""b1a2e98b-1d5b-4cbf-978c-d0a1fa07a463"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": ""Press(behavior=2)""
+                    ""interactions"": """"
                 },
                 {
                     ""name"": ""Add Gamepad Player"",
@@ -32,7 +32,7 @@ public class @LobbyInput : IInputActionCollection, IDisposable
                     ""id"": ""74c5c675-9b65-41e3-a640-3add72e7110f"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": ""Press(behavior=2)""
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+
 public class PlayerLobbyCursor : NetworkBehaviour
 {
     private static Color32[] cursorColors = {new Color32(255, 40, 40, 255), new Color32(17, 61, 255, 255), new Color32(255, 246, 9, 255), new Color32(0, 188, 37, 255),
@@ -19,12 +21,15 @@ public class PlayerLobbyCursor : NetworkBehaviour
 
     [SyncVar]
     private int playerIndex;
+    [SyncVar]
+    private bool keyboardControlled;
+    [SyncVar]
+    private int gamepadDeviceId;
 
     // Start is called before the first frame update
     void Start()
     {
         cursorInput = new CursorInput();
-        cursorInput.Cursor.Move.performed += ctx => movementInput = ctx.ReadValue<Vector2>();
 
         transform.SetParent(GameObject.FindObjectOfType<Canvas>().transform);
         playerNumberText.text = "P" + (playerIndex + 1);
@@ -33,13 +38,35 @@ public class PlayerLobbyCursor : NetworkBehaviour
         usernameText.text = "player " + (playerIndex + 1);
     }
 
-    public void InitializePlayerCursor(int playerIndex)
+    public void InitializePlayerCursor(int playerIndex, bool keyboardControlled, int gamepadDeviceId)
     {
         this.playerIndex = playerIndex;
+        Debug.Log(keyboardControlled);
+        this.keyboardControlled = keyboardControlled;
+        this.gamepadDeviceId = gamepadDeviceId;
+        
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
         cursorImage.color = cursorColors[playerIndex];
         usernameText.text = "player " + (playerIndex + 1);
+    }
+
+    private void OnMove(InputValue value)
+    {
+        //cursorInput.bindingMask = InputBinding.MaskByGroup("Gamepad");
+        if (!hasAuthority)
+            return;
+
+        if (keyboardControlled)
+        {
+            Debug.Log("Keyboard move");
+        }
+        else if(Gamepad.current.deviceId == gamepadDeviceId)
+        {
+            Debug.Log(Keyboard.current.deviceId);
+            movementInput = value.Get<Vector2>();
+        }
+
     }
 
     // Update is called once per frame

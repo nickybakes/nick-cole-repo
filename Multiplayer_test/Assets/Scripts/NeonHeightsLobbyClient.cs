@@ -28,12 +28,27 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
         lobbyManager = GameObject.FindObjectOfType<NeonHeightsLobbyManager>();
         playerCursors = new List<GameObject>();
         lobbyInput = new LobbyInput();
-        //lobbyInput.Client.AddKeyboardPlayer.performed += AddKeyboardPlayer_performed;
     }
 
-    public void AddKeyboardPlayer_performed()
+    private void OnAddKeyboardPlayer()
     {
-        connectionToServer.Send(new JoinGameMessage());
+        if (!isLocalPlayer)
+            return;
+
+        JoinGameMessage message = new JoinGameMessage();
+        message.keyboardControlled = true;
+        connectionToServer.Send(message);
+    }
+
+    private void OnAddGamepadPlayer()
+    {
+        if (!isLocalPlayer)
+            return;
+
+        JoinGameMessage message = new JoinGameMessage();
+        message.keyboardControlled = false;
+        message.gamepadDeviceId = Gamepad.current.deviceId;
+        connectionToServer.Send(message);
     }
 
     // Update is called once per frame

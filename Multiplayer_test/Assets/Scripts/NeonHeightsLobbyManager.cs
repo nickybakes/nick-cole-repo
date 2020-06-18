@@ -77,7 +77,7 @@ public class NeonHeightsLobbyManager : NetworkBehaviour
         if (playerIndex != -1)
         {
             GameObject spawnedCursor = Instantiate(PlayerLobbyCursorPrefab);
-            spawnedCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(playerIndex);
+            spawnedCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(playerIndex, message.keyboardControlled, message.gamepadDeviceId);
             //NetworkServer.AddPlayerForConnection(conn, spawnedCursor);
             NetworkServer.Spawn(spawnedCursor);
             spawnedCursor.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
@@ -112,5 +112,6 @@ public class NeonHeightsLobbyManager : NetworkBehaviour
 
 public class JoinGameMessage : MessageBase
 {
-    public int playerIndex;
+    public bool keyboardControlled;
+    public int gamepadDeviceId;
 }
