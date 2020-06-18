@@ -36,7 +36,7 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
             return;
 
         JoinGameMessage message = new JoinGameMessage();
-        message.keyboardControlled = true;
+        message.keyboard = Keyboard.current;
         connectionToServer.Send(message);
     }
 
@@ -46,8 +46,7 @@ public class NeonHeightsLobbyClient : NetworkBehaviour
             return;
 
         JoinGameMessage message = new JoinGameMessage();
-        message.keyboardControlled = false;
-        message.gamepadDeviceId = Gamepad.current.deviceId;
+        message.gamepad = Gamepad.current;
         connectionToServer.Send(message);
     }
 

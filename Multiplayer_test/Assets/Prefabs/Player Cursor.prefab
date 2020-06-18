@@ -363,6 +363,7 @@ MonoBehaviour:
   playerNumberTextShadow: {fileID: 7100962874517044791}
   cursorImage: {fileID: 7100962874975023877}
   usernameText: {fileID: 7100962874344604183}
+  playerInput: {fileID: -1525978201113168578}
 --- !u!114 &7100962875590565108
 MonoBehaviour:
   m_ObjectHideFlags: 0

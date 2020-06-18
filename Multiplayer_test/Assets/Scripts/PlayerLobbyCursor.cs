@@ -19,12 +19,14 @@ public class PlayerLobbyCursor : NetworkBehaviour
     public Image cursorImage;
     public Text usernameText;
 
+    public PlayerInput playerInput;
+
     [SyncVar]
     private int playerIndex;
-    [SyncVar]
     private bool keyboardControlled;
-    [SyncVar]
     private int gamepadDeviceId;
+    private Keyboard keyboard;
+    private Gamepad gamepad;
 
     // Start is called before the first frame update
     void Start()
@@ -38,12 +40,17 @@ public class PlayerLobbyCursor : NetworkBehaviour
         usernameText.text = "player " + (playerIndex + 1);
     }
 
-    public void InitializePlayerCursor(int playerIndex, bool keyboardControlled, int gamepadDeviceId)
+    public void InitializePlayerCursor(int playerIndex, Keyboard keyboard, Gamepad gamepad)
     {
         this.playerIndex = playerIndex;
-        Debug.Log(keyboardControlled);
-        this.keyboardControlled = keyboardControlled;
-        this.gamepadDeviceId = gamepadDeviceId;
+        Debug.Log(gamepadDeviceId);
+        this.keyboard = keyboard;
+        this.gamepad = gamepad;
+
+        //if (keyboardControlled)
+        //{
+        //    playerInput.defaultControlScheme = cursorInput.KeyboardScheme.name;
+        //}
         
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
@@ -57,16 +64,16 @@ public class PlayerLobbyCursor : NetworkBehaviour
         if (!hasAuthority)
             return;
 
-        if (keyboardControlled)
-        {
-            Debug.Log("Keyboard move");
-        }
-        else if(Gamepad.current.deviceId == gamepadDeviceId)
-        {
-            Debug.Log(Keyboard.current.deviceId);
-            movementInput = value.Get<Vector2>();
-        }
-
+        //if (keyboard != null && Keyboard.current == keyboard)
+        //{
+        //    Debug.Log("Keyboard move");
+        //}
+        //else if(Gamepad.current == gamepad)
+        //{
+        //    Debug.Log(Keyboard.current.deviceId);
+        //    movementInput = value.Get<Vector2>();
+        //}
+        movementInput = value.Get<Vector2>();
     }
 
     // Update is called once per frame
