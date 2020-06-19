@@ -27,7 +27,9 @@ public class PlayerLobbyCursor : NetworkBehaviour
 
     [SyncVar]
     private int playerIndex;
+    [SyncVar]
     private bool keyboardControlled;
+    [SyncVar]
     private int gamepadDeviceId;
 
     // Start is called before the first frame update
@@ -41,7 +43,7 @@ public class PlayerLobbyCursor : NetworkBehaviour
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
         cursorImage.color = cursorColors[playerIndex];
-        usernameText.text = "player " + (playerIndex + 1);
+        usernameText.text = "gamepad " + gamepadDeviceId;
     }
 
     public void InitializePlayerCursor(int playerIndex, bool keyboardControlled, int gamepadDeviceId)
@@ -59,7 +61,7 @@ public class PlayerLobbyCursor : NetworkBehaviour
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
         cursorImage.color = cursorColors[playerIndex];
-        usernameText.text = "player " + (playerIndex + 1);
+        usernameText.text = "gamepad " + gamepadDeviceId;
     }
 
     private void OnMove(InputValue value)
