@@ -39,9 +39,12 @@ namespace NotWhoseOnFirstSolver
 
         private string stage2Table;
 
+        private char[,] stage2Array;
+
         public NotWhoseOnFirstSolver()
         {
             words = new string[30];
+            stage2Array = new char[26, 26];
 
             //loading in the words file
             Stream inputStream = null;
@@ -83,6 +86,20 @@ namespace NotWhoseOnFirstSolver
                 reader = new StreamReader(inputStream);
 
                 stage2Table = reader.ReadLine();
+
+                int x = 0;
+                int y = 0;
+                for (int i = 0; i < stage2Table.Length; i++)
+                {
+                    stage2Array[x, y] = stage2Table[i];
+                    x++;
+                    if (x >= 26)
+                    {
+                        x = 0;
+                        y++;
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -103,6 +120,15 @@ namespace NotWhoseOnFirstSolver
 
         public void Solve()
         {
+            for (int y = 0; y < 25; y++)
+            {
+                for (int x = 0; x < 25; x++)
+                {
+                    Console.Write(stage2Array[x, y] + " ");
+                }
+                Console.WriteLine();
+            }
+
             Console.WriteLine("1. Enter display: ");
             Console.Write(" >> ");
 
@@ -144,26 +170,36 @@ namespace NotWhoseOnFirstSolver
 
             if (colWord.Length < rowWord.Length)
             {
-
+                int difference = rowWord.Length - colWord.Length;
+                for(int i = 0; i < difference; i++)
+                {
+                    colWord += colWord[i];
+                    if (i >= colWord.Length)
+                        i = 0;
+                }
             }
             else if (colWord.Length > rowWord.Length)
             {
-
+                int difference = colWord.Length - rowWord.Length;
+                for (int i = 0; i < difference; i++)
+                {
+                    rowWord += rowWord[i];
+                    if (i >= rowWord.Length)
+                        i = 0;
+                }
             }
-            else
-            {
-                Console.WriteLine(SolveStage2Table(colWord, rowWord));
-            }
+            Console.WriteLine(SolveStage2Table(colWord, rowWord));
         }
 
         private string SolveStage2Table(string colWord, string rowWord)
         {
+            Console.WriteLine("Col word = " + colWord);
+            Console.WriteLine("Row word = " + rowWord);
             string solvedString = "";
 
             for(int i = 0; i < colWord.Length; i++)
             {
-                int position = alphabet.IndexOf(colWord[i]) + (26 * alphabet.IndexOf(rowWord[i]));
-                solvedString += stage2Table[position];
+                solvedString += stage2Array[alphabet.IndexOf(colWord[i]) -1, alphabet.IndexOf(rowWord[i])];
             }
 
             return solvedString;
