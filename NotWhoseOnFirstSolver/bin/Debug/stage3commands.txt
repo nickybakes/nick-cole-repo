@@ -1,0 +1,12 @@
+lrtmbducoaB
+any button on the left column
+any button on the right column
+any button on the top row
+any button on the middle row
+any button on the bottom row
+any button not on the top row
+any button not on the bottom row
+the reference button
+the button in the same row as the reference button
+any button
+any button on the bottom row

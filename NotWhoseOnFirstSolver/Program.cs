@@ -10,7 +10,7 @@ namespace NotWhoseOnFirstSolver
     {
         static void Main(string[] args)
         {
-            NotWhoseOnFirstSolver solver = new NotWhoseOnFirstSolver();
+            NotWhosOnFirstSolver solver = new NotWhosOnFirstSolver();
 
             Console.ReadLine();
         }
