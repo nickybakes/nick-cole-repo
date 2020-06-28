@@ -378,6 +378,7 @@ namespace NotWhoseOnFirstSolver
 
         public void Solve()
         {
+            #region STAGE 1
             Console.ForegroundColor = ConsoleColor.Green;
 
             Console.WriteLine("\n--------- STAGE 1 ---------\n");
@@ -401,6 +402,9 @@ namespace NotWhoseOnFirstSolver
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Press the button in the " + stage1Position.ToString() + " position.");
+            #endregion
+
+            #region STAGE 2
 
             Console.WriteLine("\n--------- ONTO STAGE 2 ---------\n");
 
@@ -423,112 +427,57 @@ namespace NotWhoseOnFirstSolver
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Press the button in the " + stage2Position.ToString() + " position.");
 
+            #endregion
+
+            #region STAGE 3
+
             Console.WriteLine("\n--------- ONTO STAGE 3 ---------\n");
 
+            //get display
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("3. Enter display: ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write(" >> ");
-
             stage3Display = Console.ReadLine();
 
+            //figure out the reference position by using Stage 1's chart
             stage3ReferencePosition = SolveStage1Chart(stage3Display);
 
+            //get the label for that reference position
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\nYour Stage 3 reference button is in the " + stage3ReferencePosition.ToString() + " position.");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("3. Enter the " + stage3ReferencePosition.ToString() + " label: ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write(" >> ");
-
             stage3ReferenceLabel = Console.ReadLine();
 
+            //using this data, solve the venn diagram
             stage3Position = SolveStage3VennDiagram(stage3ReferencePosition, stage3ReferenceLabel, stage3Display);
 
-            if(stage3Position == Position.OTHER)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("3. Enter button position (tl, tr, ml, mr, bl, br): ");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(" >> ");
-
-                stage3Position = Position.OTHER;
-
-
-                while(stage3Position == Position.OTHER)
-                {
-                    string positionInput = Console.ReadLine().ToLower();
-                    for (int i = 0; i < positions.Length; i++)
-                    {
-                        if (positionInput == positions[i])
-                        {
-                            stage3Position = (Position)i;
-                            break;
-                        }
-                    }
-                    if (stage3Position != Position.OTHER)
-                        break;
-
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine("Invalid, try again! (tl, tr, ml, mr, bl, br)");
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write(" >> ");
-                }
-
-            }
-
+            //get the label for the final button
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("3. Enter the " + stage3Position.ToString() + " label: ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write(" >> ");
-
             stage3Label = Console.ReadLine();
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Press the button in the " + stage3Position.ToString() + " position.");
 
+            #endregion
+
             Console.WriteLine("\n--------- ONTO STAGE 4 ---------\n");
 
+            //get display
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("4. Enter display: ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write(" >> ");
-
             stage4Display = Console.ReadLine();
 
-            stage4Position = SolveStage4();
-
-            if (stage4Position == Position.OTHER)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine("3. Enter button position (tl, tr, ml, mr, bl, br): ");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(" >> ");
-
-                stage4Position = Position.OTHER;
-
-
-                while (stage4Position == Position.OTHER)
-                {
-                    string positionInput = Console.ReadLine().ToLower();
-                    for (int i = 0; i < positions.Length; i++)
-                    {
-                        if (positionInput == positions[i])
-                        {
-                            stage4Position = (Position)i;
-                            break;
-                        }
-                    }
-                    if (stage4Position != Position.OTHER)
-                        break;
-
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine("Invalid, try again! (tl, tr, ml, mr, bl, br)");
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write(" >> ");
-                }
-
-            }
+            //Solve stage 4 using the stage 3 reference position as the starting point
+            stage4Position = SolveStage4(stage3ReferencePosition);
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("4. Enter the " + stage4Position.ToString() + " label: ");
@@ -613,16 +562,18 @@ namespace NotWhoseOnFirstSolver
             return Position.OTHER;
         }
 
-        private Position SolveStage3VennDiagram(Position position, string label, string display)
+        private Position SolveStage3VennDiagram(Position referencePosition, string referenceLabel, string display)
         {
+            Console.WriteLine("\nSolving Venn Diagram");
+
             string conditionTracker = "";
             //if the button is on the left column
-            if(position == Position.TOP_LEFT || position == Position.MIDDLE_LEFT || position == Position.BOTTOM_LEFT)
+            if(referencePosition == Position.TOP_LEFT || referencePosition == Position.MIDDLE_LEFT || referencePosition == Position.BOTTOM_LEFT)
             {
                 conditionTracker += 0;
             }
             //if the label has an even number of letters
-            if (label.Length % 2 == 0)
+            if (RemoveInvalidCharacters(referenceLabel).Length % 2 == 0)
             {
                 conditionTracker += 1;
             }
@@ -644,34 +595,87 @@ namespace NotWhoseOnFirstSolver
             int buttonToPress;
             if (int.TryParse(vennDiagramResult, out buttonToPress))
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("\nVenn diagram result was: " + buttonToPress);
                 return (Position)(buttonToPress-1);
             }
+            //"C" means press the reference button
+            else if(vennDiagramResult == "c")
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("\nPick the reference button:");
+                return referencePosition;
+            }
+            //"O" means press the other button in the same row as the reference button
+            else if (vennDiagramResult == "o")
+            {
+                //print out the condition for picking a button
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("\nPick the other button in the same row as the reference button:");
+                //so we just move to the left and get the other button
+                KeyValuePair<int, int> coordPosition = TranslateToCoordinates(referencePosition);
+                return MoveAndTranslateToPosition(coordPosition.Key, coordPosition.Value, 1, false);
+            }
+            //any other command should let the user pick a button, so prompt to pick a button
+            else
+            {
+                //print out the condition for picking a button
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("\nPick ***" + stage3Commands[vennDiagramResult] + "*** and record info...");
 
-            //if its not a number, then do one of the conditions
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("\nPick ***" + stage3Commands[vennDiagramResult] + "*** and record info...");
-            return Position.OTHER;
+                //then tell user to type in the button position they chose
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("Enter button position (tl, tr, ml, mr, bl, br): ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(" >> ");
+
+                Position chosenPosition = Position.OTHER;
+
+                //continually loop until the user has typed in a valid position
+                while (chosenPosition == Position.OTHER)
+                {
+                    string positionInput = Console.ReadLine().ToLower();
+                    for (int i = 0; i < positions.Length; i++)
+                    {
+                        if (positionInput == positions[i])
+                        {
+                            chosenPosition = (Position)i;
+                            break;
+                        }
+                    }
+                    if (chosenPosition != Position.OTHER)
+                        break;
+
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.WriteLine("Invalid, try again! (tl, tr, ml, mr, bl, br)");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write(" >> ");
+                }
+
+                return chosenPosition;
+            }
+
+
         }
 
-        private Position SolveStage4()
+        private Position SolveStage4(Position currentPosition)
         {
-            Position currentPosition = stage3ReferencePosition;
-            int[] positionsHit = new int[6];
+            string[] stage4ButtonLabels = new string[6];
 
             do
             {
-                positionsHit[(int)currentPosition]++;
+                //get the label of the current position
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("\n4. Enter the " + currentPosition.ToString() + " label: ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(" >> ");
+                stage4ButtonLabels[(int)currentPosition] = Console.ReadLine();
 
-                stage4ReferenceLabel = Console.ReadLine();
+                //use this label to determine the direction to move
                 int direction = 0;
-
                 for (int i = 0; i < stage4Words.Length; i++)
                 {
-                    if (stage4ReferenceLabel == stage4Words[i])
+                    if (stage4ButtonLabels[(int)currentPosition] == stage4Words[i])
                     {
                         direction = i / 7;
                         break;
@@ -679,10 +683,14 @@ namespace NotWhoseOnFirstSolver
                 }
 
                 KeyValuePair<int, int> coordPosition = TranslateToCoordinates(currentPosition);
-
-                currentPosition = MoveAndTranslateToPosition(coordPosition.Key, coordPosition.Value, direction);
+                currentPosition = MoveAndTranslateToPosition(coordPosition.Key, coordPosition.Value, direction, true);
             }
-            while (CheckIfHitTwice(positionsHit, out stage4ReferencePosition) == Position.OTHER);
+            //if the label of the current position is null, that means we have not been there yet, and will need to get the label
+            //if it is NOT null, it means it is the repeat, and we use that as the reference button for stage 4
+            while (stage4ButtonLabels[(int)currentPosition] == null);
+
+            stage4ReferenceLabel = stage4ButtonLabels[(int)currentPosition];
+            stage4ReferencePosition = currentPosition;
 
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\nYour Stage 4 reference button is in the " + stage4ReferencePosition.ToString() + " position.");
@@ -722,36 +730,35 @@ namespace NotWhoseOnFirstSolver
             return Position.OTHER;
         }
 
-        private Position MoveAndTranslateToPosition(int x, int y, int direction)
+        private Position MoveAndTranslateToPosition(int x, int y, int direction, bool verbose)
         {
             switch (direction)
             {
                 //up
                 case 0:
-                    Console.WriteLine("Moving UP ^");
+                    if(verbose)
+                        Console.WriteLine("Moving UP ^");
                     y--;
                     break;
                 //left
                 case 1:
-                    Console.WriteLine("Moving LEFT <");
-                    x--;
+                    if (verbose)
+                        Console.WriteLine("Moving LEFT <");
+                    x = 1 - x;
                     break;
                 //right
                 case 2:
-                    Console.WriteLine("Moving RIGHT >");
-                    x++;
+                    if (verbose)
+                        Console.WriteLine("Moving RIGHT >");
+                    x = 1 - x;
                     break;
                 //down
                 case 3:
-                    Console.WriteLine("Moving DOWN v");
+                    if (verbose)
+                        Console.WriteLine("Moving DOWN v");
                     y++;
                     break;
             }
-
-            if (x < 0)
-                x = 1;
-            else if (x > 1)
-                x = 0;
 
             if (y < 0)
                 y = 2;
