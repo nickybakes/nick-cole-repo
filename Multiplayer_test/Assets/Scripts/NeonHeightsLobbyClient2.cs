@@ -9,14 +9,12 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
 {
 
     private NeonHeightsDataHandler dataHandler;
-    private int connectionId; 
+    public int connectionId; 
     // Start is called before the first frame update
     void Start()
     {
         dataHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>();
-        connectionId = (int) base.netId; //net id is not the same as connection id on the datahandler I have found
-        // Need to find a good way to allow the player to know it's own connection id bc I feel like a good way to go
-        // would be to have like the data handler store which connection ID each player belongs to and then the client
+        // a good way to go would be to have like the data handler store which connection ID each player belongs to and then the client
         // could easily see which data belongs to it because it can see all the data in the datahandler and it knows its
         // own connection id
         // at the start of the game scene, if each client instantiates its own characters inside this script, they

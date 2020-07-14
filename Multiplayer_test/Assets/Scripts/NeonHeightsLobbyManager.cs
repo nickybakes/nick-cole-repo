@@ -29,9 +29,15 @@ public class NeonHeightsLobbyManager : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
-        base.OnServerAddPlayer(conn); // instantiates the lobby client 2 prefab
-        // in the future we can replace this with custom code that does the same as this but the way we want it
-        // if necessary
+        Transform startPos = base.GetStartPosition();
+        GameObject player = startPos != null
+            ? Instantiate(playerPrefab, startPos.position, startPos.rotation)
+            : Instantiate(playerPrefab);
+
+        player.GetComponent<NeonHeightsLobbyClient2>().connectionId = conn.connectionId;
+        NetworkServer.AddPlayerForConnection(conn, player);
+
+
         print("connectionID's Updated on server");
         AddPlayerData(conn.connectionId);
     }
