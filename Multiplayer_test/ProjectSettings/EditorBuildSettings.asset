@@ -20,7 +20,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Mirror/Examples/Room/Scenes/RoomScene.unity
     guid: 48478f4d522f96945b8396f376299d3a
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/LobbyOfflineScene.unity
     guid: 53a16dc0f6f0273439dece1f3498f0e9
   - enabled: 1

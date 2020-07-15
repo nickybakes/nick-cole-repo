@@ -15,10 +15,10 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
 
     public class Player {
-        int playerNum;
-        int connID;
-        SelectedCharacter character;
-        TeamJoined team;
+        public int playerNum;
+        public int connID;
+        public SelectedCharacter character;
+        public TeamJoined team;
 
         public Player()
         {
@@ -34,6 +34,17 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             connID = pConnID;
             character = SelectedCharacter.Unassigned;
             team = TeamJoined.Unassigned;
+        }
+
+        public string toString()
+        {
+            string toReturn = "";
+            toReturn += "Player " + playerNum;
+            toReturn += "\n\tConnection ID: " + connID;
+            toReturn += "\n\tCharacter: Unassigned";
+            toReturn += "\n\tTeam: Unassigned";
+            toReturn += "\n";
+            return toReturn;
         }
 
     }
@@ -74,6 +85,7 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        numberOfPlayers = 0;
         playerConnectionIDs.Callback += OnPlayerConnectionIDsUpdated; //SyncList.Callback is called the variable is changed
         //on the server
     }
@@ -109,12 +121,20 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         string textBuilder = "Client Connection ID's: \n";
         foreach (int i in playerConnectionIDs)
             textBuilder += "\t" + i;
+        textBuilder += "\nPlayers: \n";
+        foreach (Player player in players)
+            textBuilder += player.toString();
+        textBuilder += "Press space to add a player.";
         UIText.text = textBuilder;
     }
 
     public void AddPlayer(int connID)
     {
-
+        if (numberOfPlayers < MAX_PLAYERS)
+        {
+            numberOfPlayers++;
+            players.Add(new Player(numberOfPlayers, connID));
+        }
     }
 
 }

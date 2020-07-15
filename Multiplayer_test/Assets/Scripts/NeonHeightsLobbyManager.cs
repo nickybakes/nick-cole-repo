@@ -49,9 +49,9 @@ public class NeonHeightsLobbyManager : NetworkManager
             ? Instantiate(playerPrefab, startPos.position, startPos.rotation)
             : Instantiate(playerPrefab);
 
-        player.GetComponent<NeonHeightsLobbyClient2>().connectionId = conn.connectionId;
         NetworkServer.AddPlayerForConnection(conn, player);
-
+        player.GetComponent<NeonHeightsLobbyClient2>().connectionId = conn.connectionId;
+        player.GetComponent<NeonHeightsLobbyClient2>().serverTest(conn.connectionId);
 
         print("connectionID's Updated on server");
         AddPlayerData(conn.connectionId);
