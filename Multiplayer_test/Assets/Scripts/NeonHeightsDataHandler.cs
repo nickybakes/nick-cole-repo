@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 
 public class NeonHeightsDataHandler : NetworkBehaviour
@@ -11,6 +12,33 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     // but the syncvars are synced by the server so that they are always the same
     // I'm not sure if this is the best way to do this, or if it is safe from data race conditions
     // or that it is bug free, but it is a way I have found that is scalable and easy to implement
+
+
+    public class Player {
+        int playerNum;
+        int connID;
+        SelectedCharacter character;
+        TeamJoined team;
+
+        public Player()
+        {
+            playerNum = 0;
+            connID = -1;
+            character = SelectedCharacter.Unassigned;
+            team = TeamJoined.Unassigned;
+        }
+
+        public Player(int pPlayerNum, int pConnID)
+        {
+            playerNum = pPlayerNum;
+            connID = pConnID;
+            character = SelectedCharacter.Unassigned;
+            team = TeamJoined.Unassigned;
+        }
+
+    }
+
+    public class SyncListPlayer : SyncList<Player> { }
 
 
     public enum TeamJoined
@@ -36,11 +64,12 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public const int MAX_PLAYERS = 8;
 
+    public Text UIText;
+
     [SyncVar] public int numberOfPlayers;
+    public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
     public SyncListInt playerConnectionIDs = new SyncListInt();
-    public SyncListInt playerTeams = new SyncListInt();
-    public SyncListInt selectedCharacters = new SyncListInt();
 
     // Start is called before the first frame update
     void Start()
@@ -68,6 +97,24 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             case SyncListInt.Operation.OP_SET:
                 break;
         }
+    }
+
+    void Update()
+    {
+        UpdateUIText();
+    }
+
+    void UpdateUIText()
+    {
+        string textBuilder = "Client Connection ID's: \n";
+        foreach (int i in playerConnectionIDs)
+            textBuilder += "\t" + i;
+        UIText.text = textBuilder;
+    }
+
+    public void AddPlayer(int connID)
+    {
+
     }
 
 }

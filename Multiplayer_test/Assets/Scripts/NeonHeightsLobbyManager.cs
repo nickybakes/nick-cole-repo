@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
@@ -23,12 +24,26 @@ public class NeonHeightsLobbyManager : NetworkManager
     // Start is called before the first frame update
     public override void Start()
     {
+
+        try
+        {
+            dataHandler = GameObject.Find("NetworkDataHandler").GetComponent(typeof(NeonHeightsDataHandler)) as NeonHeightsDataHandler;
+        } catch(Exception e)
+        {
+            dataHandler = null;
+        }
         print("dataHandler: " + dataHandler);
         base.Start(); // this starts the server on the NetworkManager base class
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
+        if(dataHandler == null)
+        {
+            print("looking for datahandler");
+            dataHandler = GameObject.Find("NetworkDataHandler").GetComponent(typeof(NeonHeightsDataHandler)) as NeonHeightsDataHandler;
+        }
+
         Transform startPos = base.GetStartPosition();
         GameObject player = startPos != null
             ? Instantiate(playerPrefab, startPos.position, startPos.rotation)
