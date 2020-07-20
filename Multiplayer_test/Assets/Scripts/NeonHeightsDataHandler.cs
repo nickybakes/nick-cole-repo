@@ -77,6 +77,9 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public Text UIText;
 
+    public NeonHeightsLobbyClient2 localClient;
+
+    public int connectionId; 
     [SyncVar] public int numberOfPlayers;
     public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
@@ -85,9 +88,17 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        localClient = GameObject.FindObjectOfType<NeonHeightsLobbyClient2>();
+
+        connectionId = -1;
         numberOfPlayers = 0;
         playerConnectionIDs.Callback += OnPlayerConnectionIDsUpdated; //SyncList.Callback is called the variable is changed
         //on the server
+    }
+
+    public void setConnectionId(int connId)
+    {
+        connectionId = connId;
     }
 
     void OnPlayerConnectionIDsUpdated(SyncListInt.Operation op, int index, int oldItem, int newItem) //SyncList.Callback
@@ -128,13 +139,61 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         UIText.text = textBuilder;
     }
 
-    public void AddPlayer(int connID)
+    public bool AddPlayer(int connID)
     {
+        bool toReturn = false;
         if (numberOfPlayers < MAX_PLAYERS)
         {
             numberOfPlayers++;
             players.Add(new Player(numberOfPlayers, connID));
+            toReturn = true;
         }
+        return toReturn;
+    }
+
+    public void resetData()
+    {
+        numberOfPlayers = 0;
+        players = new SyncListPlayer();
+        playersAdded = new SyncListBool();
+        playerConnectionIDs = new SyncListInt();
+    }
+
+    public void RemoveConnection(int connID)
+    {
+        playerConnectionIDs.Remove(connID);
+        foreach(Player player in players)
+        {
+            if (player.connID == connID)
+                RemovePlayer(player);
+        }
+    }
+
+    public void RemovePlayer(Player player)
+    {
+        players.Remove(player);
+        /*numberOfPlayers = 0;
+        foreach(Player p in players)
+        {
+            numberOfPlayers++;
+            p.playerNum = numberOfPlayers; 
+        }*/
+    }
+
+    public List<int> GetPlayerNumsForClient(int connID)
+    {
+        List<int> toReturn = new List<int>();
+        foreach(Player player in players)
+        {
+            if (player.connID == connID)
+                toReturn.Add(player.playerNum);
+        }
+        return toReturn;
+    }
+
+    public void checkForErrors()
+    {
+
     }
 
 }

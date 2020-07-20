@@ -57,10 +57,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 6781134222470372876}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ebd06b86465c024ba0bcc62055b1832, type: 3}
+  m_Script: {fileID: 11500000, guid: 6f7840e9133f74f429fbf463cf525ce8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  PlayerLobbyCursorPrefab: {fileID: 0}
-  playerCursors: []
+  connectionId: 0
+  PlayerCursor: {fileID: 0}
+  anyButtonPressedGamePad:
+    m_Name: Any Button Pressed Game Pad
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: ad429006-1c3f-4aec-8602-dbc65b70aaaa
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+  anyButtonPressedKeyboard:
+    m_Name: Any Button Pressed Keyboard
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: fda89870-39b5-4302-acdc-0e6dd25cf3df
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []

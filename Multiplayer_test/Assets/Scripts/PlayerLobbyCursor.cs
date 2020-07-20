@@ -25,16 +25,20 @@ public class PlayerLobbyCursor : NetworkBehaviour
 
     private int speed = 7;
 
-    [SyncVar]
-    private int playerIndex;
-    [SyncVar]
+    [SyncVar] private int playerIndex;
     private bool keyboardControlled;
-    [SyncVar]
     private int gamepadDeviceId;
+    private Vector2 moveVector;
 
     // Start is called before the first frame update
     void Start()
     {
+        if (!hasAuthority)
+        {
+            Destroy(gameObject.GetComponent<PlayerInput>());
+        }
+
+
         cursorInput = new CursorInput();
 
 
@@ -64,78 +68,74 @@ public class PlayerLobbyCursor : NetworkBehaviour
         usernameText.text = "gamepad " + gamepadDeviceId;
     }
 
-    private void OnMove(InputValue value)
+    public void OnMove(InputValue value)
     {
-        //cursorInput.bindingMask = InputBinding.MaskByGroup("Gamepad");
-        if (!hasAuthority)
-            return;
-
-        //if (keyboard != null && Keyboard.current == keyboard)
-        //{
-        //    Debug.Log("Keyboard move");
-        //}
-        //else if(Gamepad.current == gamepad)
-        //{
-        //    Debug.Log(Keyboard.current.deviceId);
-        //    movementInput = value.Get<Vector2>();
-        //}
-        //movementInput = value.Get<Vector2>();
+        moveVector = value.Get<Vector2>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        transform.localScale = new Vector3(1, 1, 1);
-        float yPos = gameObject.transform.position.y;
-        float xPos = gameObject.transform.position.x;
-        float xInput = 0;
-        float yInput = 0;
-
         if (!hasAuthority)
             return;
 
         if (!Application.isFocused)
             return;
 
-        if (Gamepad.all[gamepadDeviceId].buttonEast.wasPressedThisFrame)
-        {
-            Debug.Log(gamepadDeviceId);
-        }
+        float transformX = gameObject.transform.position.x + moveVector.x;
+        float transformY = gameObject.transform.position.y + moveVector.y;
 
-        if (Gamepad.all[gamepadDeviceId].dpad.up.isPressed)
-        {
-            yInput = 1;
-            transform.position = new Vector3(transform.position.x, transform.position.y + speed, 0);
-        }
-        if (Gamepad.all[gamepadDeviceId].dpad.down.isPressed)
-        {
-            yInput = -1;
-            transform.position = new Vector3(transform.position.x, transform.position.y - speed, 0);
-        }
-        if (Gamepad.all[gamepadDeviceId].dpad.left.isPressed)
-        {
-            xInput = -1;
-            transform.position = new Vector3(transform.position.x - speed, transform.position.y, 0);
-        }
-        if (Gamepad.all[gamepadDeviceId].dpad.right.isPressed)
-        {
-            xInput = 1;
-            transform.position = new Vector3(transform.position.x + speed, transform.position.y, 0);
-        }
-        
-        //RectTransform objectRectTransform = canvas.GetComponent<RectTransform>();
-        //yPos = yPos + (yInput * speed * canvas.transform.localScale.y);
-        //xPos = xPos + (xInput * speed * canvas.transform.localScale.x);
-        //yPos = Mathf.Clamp(yPos, 0, objectRectTransform.rect.height * canvas.transform.localScale.y);
-        //xPos = Mathf.Clamp(xPos, 0, objectRectTransform.rect.width * canvas.transform.localScale.x);
+        if (transformX > Screen.width - (Screen.width/2))
+            transformX = Screen.width - (Screen.width/2);
+        else if (transformX < 0 - (Screen.width/2))
+            transformX = 0 - (Screen.width/2);
 
-        //gameObject.transform.position = new Vector2(xPos, yPos);
+        if (transformY > Screen.height - (Screen.height / 2))
+            transformY = Screen.height - (Screen.height / 2);
+        else if (transformY < 0 - (Screen.height / 2))
+            transformY = 0;
 
-        //transform.position += (Vector3)movementInput * 5;
+        gameObject.transform.position = new Vector3(transformX, transformY, gameObject.transform.position.z);
     }
 
-    public void UpdateInput()
+
+
+    /*    
+ *    Old code
+ *    if (Gamepad.all[gamepadDeviceId].buttonEast.wasPressedThisFrame)
     {
-
+        Debug.Log(gamepadDeviceId);
     }
+
+    if (Gamepad.all[gamepadDeviceId].dpad.up.isPressed)
+    {
+        yInput = 1;
+        transform.position = new Vector3(transform.position.x, transform.position.y + speed, 0);
+    }
+    if (Gamepad.all[gamepadDeviceId].dpad.down.isPressed)
+    {
+        yInput = -1;
+        transform.position = new Vector3(transform.position.x, transform.position.y - speed, 0);
+    }
+    if (Gamepad.all[gamepadDeviceId].dpad.left.isPressed)
+    {
+        xInput = -1;
+        transform.position = new Vector3(transform.position.x - speed, transform.position.y, 0);
+    }
+    if (Gamepad.all[gamepadDeviceId].dpad.right.isPressed)
+    {
+        xInput = 1;
+        transform.position = new Vector3(transform.position.x + speed, transform.position.y, 0);
+    }
+
+    //RectTransform objectRectTransform = canvas.GetComponent<RectTransform>();
+    //yPos = yPos + (yInput * speed * canvas.transform.localScale.y);
+    //xPos = xPos + (xInput * speed * canvas.transform.localScale.x);
+    //yPos = Mathf.Clamp(yPos, 0, objectRectTransform.rect.height * canvas.transform.localScale.y);
+    //xPos = Mathf.Clamp(xPos, 0, objectRectTransform.rect.width * canvas.transform.localScale.x);
+
+    //gameObject.transform.position = new Vector2(xPos, yPos);
+
+    //transform.position += (Vector3)movementInput * 5;
+    */
 }

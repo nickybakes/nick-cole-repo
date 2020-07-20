@@ -62,3 +62,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
+  connectionId: 0
+  PlayerCursor: {fileID: 7100962875590565104, guid: a214d06e8a73a8c40a45b9091c434416,
+    type: 3}
+  anyButtonPressedGamePad:
+    m_Name: Any Button Pressed Game Pad
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 110d940e-1dfe-4852-84d4-aa3553dc2175
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+  anyButtonPressedKeyboard:
+    m_Name: Any Button Pressed Keyboard
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 936e1823-8c73-40ac-81fc-2017161c84e8
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []

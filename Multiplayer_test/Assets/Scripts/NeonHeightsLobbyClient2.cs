@@ -7,31 +7,46 @@ using UnityEngine.InputSystem.Users;
 
 public class NeonHeightsLobbyClient2 : NetworkBehaviour
 {
-
+    public const int GAMEPAD = 1, KEYBOARD = 0;
     private NeonHeightsDataHandler dataHandler;
-    public int connectionId; 
+    public int connectionId;
+    private int numGamePads, numKeyboards;
+    public GameObject PlayerCursor;
+    public InputAction anyButtonPressedGamePad, anyButtonPressedKeyboard;
     // Start is called before the first frame update
     void Start()
     {
+        numGamePads = 0;
+        numKeyboards = 0;
         dataHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>();
-        if (isLocalPlayer)
-        {
-            print("Has Authority: " + hasAuthority);
-            dataHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>();
+        if (!isLocalPlayer)
+            return;
+
+        if (dataHandler.playerConnectionIDs.Count > 0)
             connectionId = dataHandler.playerConnectionIDs[dataHandler.playerConnectionIDs.Count - 1];
-            // This might create an issue if two clients are added at almost the same time, but it also might be fine, I think it depends on what order the Start methods are called by unity
-            //compared to when the datahandler adds conn ids
-            print("My connection ID is " + connectionId);
-            print("Lobby Client Here! My connection ID list looks a bit like: ");
-            foreach (int i in dataHandler.playerConnectionIDs)
-                print(i);
-        }
+        else
+            connectionId = 0;
+
+        dataHandler.setConnectionId(connectionId);
+        // This might create an issue if two clients are added at almost the same time, but it also might be fine, I think it depends on what order the Start methods are called by unity
+        //compared to when the datahandler adds conn ids
+        print("My connection ID is " + connectionId);
+
         // a good way to go would be to have like the data handler store which connection ID each player belongs to and then the client
         // could easily see which data belongs to it because it can see all the data in the datahandler and it knows its
         // own connection id
         // at the start of the game scene, if each client instantiates its own characters inside this script, they
         // will all have proper network authority no questions asked but a better way might be to instantiate
         //inside of the networkmanager and then assign client authority, depending on what we can get to work
+
+        anyButtonPressedGamePad = new InputAction(binding: "/<Gamepad>/<button>");
+        anyButtonPressedGamePad.performed += ctx => OnPlayerJoined(1);
+        anyButtonPressedGamePad.Enable();
+
+        anyButtonPressedKeyboard = new InputAction(binding: "/<Keyboard>/<button>");
+        anyButtonPressedKeyboard.performed += ctx => OnPlayerJoined(0);
+        anyButtonPressedKeyboard.Enable();
+
     }
 
     public void serverTest(int connID)
@@ -48,23 +63,40 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+
+    public void OnPlayerJoined(int device)
     {
-        if (isLocalPlayer)
+        if (!Application.isFocused)
+            return;
+
+        bool addPlayer = false;
+        if (device == GAMEPAD && numGamePads < Gamepad.all.Count)
         {
-            if (Input.GetKeyDown("space"))
-            {
-                print("space key was pressed");
-                CmdAddPlayer(connectionId);
-            }
+            numGamePads++;
+            addPlayer = true;
         }
+        else if (device == KEYBOARD && numKeyboards == 0)
+        {
+            numKeyboards++;
+            addPlayer = true;
+        }
+
+        if (addPlayer)
+            CmdAddPlayer(connectionId, this.gameObject, dataHandler.numberOfPlayers);
     }
 
     [Command]
-    void CmdAddPlayer(int connId)
+    void CmdAddPlayer(int connId, GameObject owner, int playerNum)
     {
         print("Connection ID: " + connId);
-        dataHandler.AddPlayer(connId);
+        if (dataHandler.AddPlayer(connId))
+        {
+            ClientScene.RegisterPrefab(PlayerCursor);
+            GameObject curCursor = Instantiate(PlayerCursor, new Vector3(0, 0, 50), Quaternion.identity);
+            curCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(playerNum, true, 0);
+            NetworkServer.Spawn(curCursor, owner);
+
+        }
     }
 
     /*

@@ -201,6 +201,7 @@ MonoBehaviour:
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 1166025906665632352, guid: c2894fead1283db4ab27bd9892ea2801, type: 3}
+  - {fileID: 7100962875590565104, guid: a214d06e8a73a8c40a45b9091c434416, type: 3}
   dataHandler: {fileID: 2066599468}
 --- !u!114 &824762809
 MonoBehaviour:
@@ -819,6 +820,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   UIText: {fileID: 1288449010}
+  connectionId: 0
   numberOfPlayers: 0
 --- !u!114 &2066599469
 MonoBehaviour:

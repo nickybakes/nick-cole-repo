@@ -21,14 +21,14 @@ public class NeonHeightsLobbyManager : NetworkManager
     // is the unity editor client
 
     public NeonHeightsDataHandler dataHandler;
+    private int numPlayersSpawned;
     // Start is called before the first frame update
     public override void Start()
     {
-
         try
         {
             dataHandler = GameObject.Find("NetworkDataHandler").GetComponent(typeof(NeonHeightsDataHandler)) as NeonHeightsDataHandler;
-        } catch(Exception e)
+        } catch (Exception e)
         {
             dataHandler = null;
         }
@@ -38,7 +38,7 @@ public class NeonHeightsLobbyManager : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
-        if(dataHandler == null)
+        if (dataHandler == null)
         {
             print("looking for datahandler");
             dataHandler = GameObject.Find("NetworkDataHandler").GetComponent(typeof(NeonHeightsDataHandler)) as NeonHeightsDataHandler;
@@ -57,6 +57,22 @@ public class NeonHeightsLobbyManager : NetworkManager
         AddPlayerData(conn.connectionId);
     }
 
+    public override void OnServerDisconnect(NetworkConnection conn)
+    {
+        print("Remove Player Called");
+        RemovePlayerData(conn.connectionId);
+    }
+
+    public override void OnStopServer()
+    {
+        dataHandler.resetData();
+    }
+
+    void RemovePlayerData(int connID)
+    {
+        dataHandler.RemoveConnection(connID);
+    }
+
     void AddPlayerData(int connID)
     {
         dataHandler.playerConnectionIDs.Add(connID);
@@ -69,6 +85,4 @@ public class NeonHeightsLobbyManager : NetworkManager
 
         // add whatever data is needed 
     }
-
-
 }
