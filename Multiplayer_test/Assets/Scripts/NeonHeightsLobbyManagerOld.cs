@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿/*using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
@@ -116,4 +116,4 @@ public class JoinGameMessage : MessageBase
 {
     public bool keyboardControlled;
     public int gamepadDeviceId;
-}
+}*/

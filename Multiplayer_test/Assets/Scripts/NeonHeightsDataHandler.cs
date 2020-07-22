@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -79,21 +80,36 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public NeonHeightsLobbyClient2 localClient;
 
-    public int connectionId; 
+    public int connectionId;
     [SyncVar] public int numberOfPlayers;
     public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
     public SyncListInt playerConnectionIDs = new SyncListInt();
+    public GameObject[] playerCursors;
 
     // Start is called before the first frame update
     void Start()
     {
+        if (isServer)
+            playerCursors = new GameObject[] { null, null, null, null, null, null, null, null };
+        else
+            playerCursors = null;
         localClient = GameObject.FindObjectOfType<NeonHeightsLobbyClient2>();
 
         connectionId = -1;
         numberOfPlayers = 0;
         playerConnectionIDs.Callback += OnPlayerConnectionIDsUpdated; //SyncList.Callback is called the variable is changed
         //on the server
+    }
+
+    public void SetLocalClient(NeonHeightsLobbyClient2 localClient)
+    {
+        this.localClient = localClient;
+    }
+
+    public NeonHeightsLobbyClient2 GetLocalClient()
+    {
+        return localClient;
     }
 
     public void setConnectionId(int connId)
@@ -139,16 +155,32 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         UIText.text = textBuilder;
     }
 
-    public bool AddPlayer(int connID)
+    public int AddPlayer(int connID)
     {
-        bool toReturn = false;
+        int toReturn = -1;
         if (numberOfPlayers < MAX_PLAYERS)
         {
             numberOfPlayers++;
-            players.Add(new Player(numberOfPlayers, connID));
-            toReturn = true;
+            int curNum = 0;
+            for(int i = 0; i < playerCursors.Length; i++)
+            {
+                if(playerCursors[i] == null)
+                {
+                    curNum = i;
+                    break;
+                }
+            }
+            print("curNum+1: " + (curNum + 1));
+            players.Add(new Player(curNum+1, connID));
+            toReturn = curNum + 1;
         }
         return toReturn;
+    }
+
+    public void AddCursorObject(GameObject playerCursor, int pNum)
+    {
+        playerCursors[pNum - 1] = playerCursor;
+        print("Adding to index " + (pNum - 1));
     }
 
     public void resetData()
@@ -161,23 +193,50 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public void RemoveConnection(int connID)
     {
+        print("Num Players: " + players.Count);
         playerConnectionIDs.Remove(connID);
-        foreach(Player player in players)
+        for(int i = 0; i < players.Count; i++)
         {
+            Player player = players[i];
+            print("one player found for removed connection");
             if (player.connID == connID)
+            {
+                print("PlayerNum: " + player.playerNum);
                 RemovePlayer(player);
+                i--;
+            }
+            print("Continuing loop");
         }
+        print("Num Players at End: " + players.Count);
     }
 
     public void RemovePlayer(Player player)
     {
+        print("RemovePlayerCalled");
         players.Remove(player);
-        /*numberOfPlayers = 0;
-        foreach(Player p in players)
+        numberOfPlayers--;
+
+        GameObject cursor = playerCursors[player.playerNum-1];
+        if (cursor != null && cursor.GetComponent<PlayerLobbyCursor>().GetPlayerNum() == player.playerNum)
         {
-            numberOfPlayers++;
-            p.playerNum = numberOfPlayers; 
-        }*/
+            playerCursors[player.playerNum - 1] = null;
+            Destroy(cursor);
+        }
+        else
+            print("Something has gone wrong!!: " + cursor);
+
+    }
+
+    public void RemovePlayer(int pNum)
+    {
+        Player curPlayer = null;
+        foreach(Player player in players)
+        {
+            if (player.playerNum == pNum)
+                curPlayer = player;
+        }
+        if (curPlayer != null)
+            RemovePlayer(curPlayer);
     }
 
     public List<int> GetPlayerNumsForClient(int connID)

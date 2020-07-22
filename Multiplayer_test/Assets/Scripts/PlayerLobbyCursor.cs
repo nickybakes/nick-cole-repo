@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Users;
 
 public class PlayerLobbyCursor : NetworkBehaviour
 {
@@ -21,14 +22,18 @@ public class PlayerLobbyCursor : NetworkBehaviour
     public Image cursorImage;
     public Text usernameText;
 
-    public PlayerInput playerInput;
+    private PlayerInput playerInput;
+    private bool initialized = false;
+    private InputDevice device;
 
     private int speed = 7;
 
     [SyncVar] private int playerIndex;
-    private bool keyboardControlled;
+    [SyncVar] private bool keyboardControlled;
     private int gamepadDeviceId;
     private Vector2 moveVector;
+
+    private NeonHeightsLobbyClient2 clientHandler;
 
     // Start is called before the first frame update
     void Start()
@@ -37,7 +42,18 @@ public class PlayerLobbyCursor : NetworkBehaviour
         {
             Destroy(gameObject.GetComponent<PlayerInput>());
         }
+        else
+        {
+            playerInput = gameObject.GetComponent<PlayerInput>();
+            print("PlayerInput: " + playerInput);
+            playerInput.neverAutoSwitchControlSchemes = true;
+            clientHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>().GetLocalClient();
 
+            if (initialized)
+            {
+                clientHandler.AddCursor(this);
+            }
+        }
 
         cursorInput = new CursorInput();
 
@@ -50,17 +66,38 @@ public class PlayerLobbyCursor : NetworkBehaviour
         usernameText.text = "gamepad " + gamepadDeviceId;
     }
 
-    public void InitializePlayerCursor(int playerIndex, bool keyboardControlled, int gamepadDeviceId)
+    public void PairToDevice()
     {
-        this.playerIndex = playerIndex;
-        Debug.Log(gamepadDeviceId);
-        this.keyboardControlled = keyboardControlled;
-        this.gamepadDeviceId = gamepadDeviceId;
+        if (!hasAuthority)
+            return;
+        InputUser curUser = InputUser.PerformPairingWithDevice(device, playerInput.user, InputUserPairingOptions.None);
+        bool debugSwitchControlScheme = playerInput.SwitchCurrentControlScheme(new InputDevice[] { device });
+        
+    }
 
-        //if (keyboardControlled)
-        //{
-        //    playerInput.defaultControlScheme = cursorInput.KeyboardScheme.name;
-        //}
+    public int GetPlayerNum()
+    {
+        return playerIndex+1;
+    }
+
+    public void InitializePlayerCursor(int playerIndex, bool keyboardControlled)
+    {
+        print("called");
+        initialized = true;
+
+        this.playerIndex = playerIndex-1;
+        this.keyboardControlled = keyboardControlled;
+
+        print("keyboardControlled: " + keyboardControlled);
+
+        if (keyboardControlled)
+        {
+            device = Keyboard.current;
+        }
+        else
+        {
+            device = Gamepad.current;
+        } 
         
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
@@ -70,9 +107,32 @@ public class PlayerLobbyCursor : NetworkBehaviour
 
     public void OnMove(InputValue value)
     {
+        if (!hasAuthority)
+            return;
+
+        if (!Application.isFocused)
+            return;
+
         moveVector = value.Get<Vector2>();
     }
 
+    public void OnSelect(InputValue value)
+    {
+        if (!hasAuthority)
+            return;
+
+        if (!Application.isFocused)
+            return;
+
+        print("select called");
+    }
+
+    public void OnLeave(InputValue value)
+    {
+        if (!hasAuthority)
+            return;
+        clientHandler.PlayerLeave(this.GetPlayerNum(), keyboardControlled);
+    }
     // Update is called once per frame
     void Update()
     {

@@ -59,7 +59,6 @@ public class NeonHeightsLobbyManager : NetworkManager
 
     public override void OnServerDisconnect(NetworkConnection conn)
     {
-        print("Remove Player Called");
         RemovePlayerData(conn.connectionId);
     }
 

@@ -13,9 +13,11 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     private int numGamePads, numKeyboards;
     public GameObject PlayerCursor;
     public InputAction anyButtonPressedGamePad, anyButtonPressedKeyboard;
+    private List<PlayerLobbyCursor> playerCursors;
     // Start is called before the first frame update
     void Start()
     {
+        playerCursors = new List<PlayerLobbyCursor>();
         numGamePads = 0;
         numKeyboards = 0;
         dataHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>();
@@ -28,6 +30,7 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
             connectionId = 0;
 
         dataHandler.setConnectionId(connectionId);
+        dataHandler.SetLocalClient(this);
         // This might create an issue if two clients are added at almost the same time, but it also might be fine, I think it depends on what order the Start methods are called by unity
         //compared to when the datahandler adds conn ids
         print("My connection ID is " + connectionId);
@@ -39,11 +42,11 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         // will all have proper network authority no questions asked but a better way might be to instantiate
         //inside of the networkmanager and then assign client authority, depending on what we can get to work
 
-        anyButtonPressedGamePad = new InputAction(binding: "/<Gamepad>/<button>");
+        anyButtonPressedGamePad = new InputAction(binding: "/<Gamepad>/buttonSouth");
         anyButtonPressedGamePad.performed += ctx => OnPlayerJoined(1);
         anyButtonPressedGamePad.Enable();
 
-        anyButtonPressedKeyboard = new InputAction(binding: "/<Keyboard>/<button>");
+        anyButtonPressedKeyboard = new InputAction(binding: "/<Keyboard>/Enter");
         anyButtonPressedKeyboard.performed += ctx => OnPlayerJoined(0);
         anyButtonPressedKeyboard.Enable();
 
@@ -70,6 +73,7 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
             return;
 
         bool addPlayer = false;
+        bool keyBoardControlled = false;
         if (device == GAMEPAD && numGamePads < Gamepad.all.Count)
         {
             numGamePads++;
@@ -77,27 +81,69 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         }
         else if (device == KEYBOARD && numKeyboards == 0)
         {
+            print("adding keyboard");
             numKeyboards++;
+            keyBoardControlled = true;
             addPlayer = true;
         }
 
         if (addPlayer)
-            CmdAddPlayer(connectionId, this.gameObject, dataHandler.numberOfPlayers);
+            CmdAddPlayer(connectionId, this.gameObject, keyBoardControlled);
     }
 
     [Command]
-    void CmdAddPlayer(int connId, GameObject owner, int playerNum)
+    void CmdAddPlayer(int connId, GameObject owner, bool keyBoardControlled)
     {
         print("Connection ID: " + connId);
-        if (dataHandler.AddPlayer(connId))
+        int pNum = dataHandler.AddPlayer(connId);
+        if (pNum != -1)
         {
+            print("CmdAddPlayer pNum: " + pNum);
             ClientScene.RegisterPrefab(PlayerCursor);
             GameObject curCursor = Instantiate(PlayerCursor, new Vector3(0, 0, 50), Quaternion.identity);
-            curCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(playerNum, true, 0);
+            curCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(pNum, keyBoardControlled);
             NetworkServer.Spawn(curCursor, owner);
-
+            dataHandler.AddCursorObject(curCursor, pNum);
         }
     }
+
+    [Command]
+    void CmdRemovePlayer(int pNum)
+    {
+        dataHandler.RemovePlayer(pNum);
+    }
+
+    public void AddCursor(PlayerLobbyCursor cursor)
+    {
+        playerCursors.Add(cursor);
+        foreach(PlayerLobbyCursor curCursor in playerCursors)
+        {
+            curCursor.PairToDevice();
+        }
+    }
+
+    public void PlayerLeave(int pNum, bool controlledByKeyboard)
+    {
+        print("Player Leave Called");
+        foreach (PlayerLobbyCursor cursor in playerCursors)
+        {
+            if (cursor.GetPlayerNum() == pNum)
+            {
+                playerCursors.Remove(cursor);
+                break;
+            }
+        }
+        CmdRemovePlayer(pNum);
+        if (controlledByKeyboard)
+        {
+            print("removing a keyboard");
+            numKeyboards--;
+        }
+        else
+            numGamePads--;
+    }
+
+
 
     /*
     Psuedocode
