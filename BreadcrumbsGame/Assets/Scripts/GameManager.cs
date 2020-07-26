@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour
 {
@@ -13,10 +14,15 @@ public class GameManager : MonoBehaviour
     private Hex[,] boardData;
 
 
+    private bool mouseDragging;
+    private Vector2 mouseDragStart;
+    private Vector2 boardDragStart;
+
+
     // Start is called before the first frame update
     void Start()
     {
-        SpawnHexes(10, 10);
+        SpawnHexes(10, 6);
     }
 
     // Update is called once per frame
@@ -30,6 +36,20 @@ public class GameManager : MonoBehaviour
         {
             LeanTween.scale(gameBoard.gameObject, gameBoard.transform.localScale * 1.2f, .2f);
         }
+        if (Input.GetMouseButtonDown(2))
+        {
+            mouseDragging = true;
+            mouseDragStart = Input.mousePosition;
+            boardDragStart = gameBoard.transform.position;
+        }
+        if(mouseDragging)
+        {
+            gameBoard.transform.position = (Vector3) (boardDragStart - mouseDragStart + (Vector2)Input.mousePosition);
+        }
+        if (Input.GetMouseButtonUp(2))
+        {
+            mouseDragging = false;
+        }
     }
 
     public void SpawnHexes(int width, int height)
@@ -42,6 +62,7 @@ public class GameManager : MonoBehaviour
             {
                 GameObject spawnedHex = Instantiate(hexPrefab, gameBoard.transform);
                 Hex hex = spawnedHex.GetComponent<Hex>();
+                boardData[x, y] = hex;
 
                 //if its an even number row
                 if (y % 2 == 0)
@@ -52,24 +73,40 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     spawnedHex.transform.position = new Vector3(100 + x * 200, gameBoard.pixelRect.height - y * 180, 0);
-
-                    //top left edge of this hex becomes bot right of above hex
-                    if (y != 0)
-                    {
-                        //Destroy(hex.edgeButtons[(int)Edge.LeftTop]);
-                        hex.edgeButtons[(int)Edge.LeftTop] = null;
-                        //hex.edgeButtons[(int)Edge.LeftTop] = boardData[x, y - 1].edgeButtons[(int)Edge.RightBot];
-                        print(boardData[x, y - 1].edgeButtons[(int)Edge.RightBot]);
-                    }
                 }
 
                 //go through each side of the hex and connect its buttons up with the hexes next to it
-                //if(x != 0)
-                //{
-                //    Destroy(hex.edgeButtons[(int)Edge.LeftMid]);
-                //    hex.edgeButtons[(int)Edge.LeftMid] = boardData[x - 1, y].edgeButtons[(int)Edge.RightMid];
-                //}
 
+                //top left edge of this hex becomes bot right of above hex
+                if(y != 0)
+                {
+                    if (x != 0 && y % 2 == 0)
+                    {
+                        Destroy(hex.edgeButtons[(int)Edge.LeftTop]);
+                        hex.edgeButtons[(int)Edge.LeftTop] = boardData[x, y - 1].edgeButtons[(int)Edge.RightBot];
+                    }
+                    if (y % 2 != 0)
+                    {
+                        Destroy(hex.edgeButtons[(int)Edge.LeftTop]);
+                        hex.edgeButtons[(int)Edge.LeftTop] = boardData[x, y - 1].edgeButtons[(int)Edge.RightBot];
+                    }
+                    if (x != boardData.GetLength(0) - 1 && y % 2 != 0)
+                    {
+                        Destroy(hex.edgeButtons[(int)Edge.RightTop]);
+                        hex.edgeButtons[(int)Edge.RightTop] = boardData[x, y - 1].edgeButtons[(int)Edge.LeftBot];
+                    }
+                    if (y % 2 == 0)
+                    {
+                        Destroy(hex.edgeButtons[(int)Edge.RightTop]);
+                        hex.edgeButtons[(int)Edge.RightTop] = boardData[x, y - 1].edgeButtons[(int)Edge.LeftBot];
+                    }
+                }
+
+                if (x != 0)
+                {
+                    Destroy(hex.edgeButtons[(int)Edge.LeftMid]);
+                    hex.edgeButtons[(int)Edge.LeftMid] = boardData[x - 1, y].edgeButtons[(int)Edge.RightMid];
+                }
             }
         }
 
