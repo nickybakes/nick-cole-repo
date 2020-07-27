@@ -42,8 +42,8 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             string toReturn = "";
             toReturn += "Player " + playerNum;
             toReturn += "\n\tConnection ID: " + connID;
-            toReturn += "\n\tCharacter: Unassigned";
-            toReturn += "\n\tTeam: Unassigned";
+            toReturn += "\n\tCharacter: " + character;
+            toReturn += "\n\tTeam: Unassigned: " + team;
             toReturn += "\n";
             return toReturn;
         }
@@ -81,23 +81,34 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     public NeonHeightsLobbyClient2 localClient;
 
     public int connectionId;
+    [SyncVar] public string nextLevel;
     [SyncVar] public int numberOfPlayers;
+    [SyncVar] public bool gameStarted;
     public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
     public SyncListInt playerConnectionIDs = new SyncListInt();
     public GameObject[] playerCursors;
+    public NeonHeightsLobbyManager networkManager;
 
     // Start is called before the first frame update
     void Start()
     {
+        DontDestroyOnLoad(this.gameObject);
         if (isServer)
+        {
             playerCursors = new GameObject[] { null, null, null, null, null, null, null, null };
+        }
         else
+        {
             playerCursors = null;
+            networkManager = null;
+        }
         localClient = GameObject.FindObjectOfType<NeonHeightsLobbyClient2>();
 
         connectionId = -1;
         numberOfPlayers = 0;
+        nextLevel = "random";
+        gameStarted = false;
         playerConnectionIDs.Callback += OnPlayerConnectionIDsUpdated; //SyncList.Callback is called the variable is changed
         //on the server
     }
@@ -105,6 +116,12 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     public void SetLocalClient(NeonHeightsLobbyClient2 localClient)
     {
         this.localClient = localClient;
+    }
+
+    public void SetNetworkManager(NeonHeightsLobbyManager networkManager)
+    {
+        print("Setting network Manager");
+        this.networkManager = networkManager;
     }
 
     public NeonHeightsLobbyClient2 GetLocalClient()
@@ -145,14 +162,17 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     void UpdateUIText()
     {
-        string textBuilder = "Client Connection ID's: \n";
-        foreach (int i in playerConnectionIDs)
-            textBuilder += "\t" + i;
-        textBuilder += "\nPlayers: \n";
-        foreach (Player player in players)
-            textBuilder += player.toString();
-        textBuilder += "Press space to add a player.";
-        UIText.text = textBuilder;
+        if (UIText != null)
+        {
+            string textBuilder = "Client Connection ID's: \n";
+            foreach (int i in playerConnectionIDs)
+                textBuilder += "\t" + i;
+            textBuilder += "\nPlayers: \n";
+            foreach (Player player in players)
+                textBuilder += player.toString();
+            textBuilder += "Press space to add a player.";
+            UIText.text = textBuilder;
+        }
     }
 
     public int AddPlayer(int connID)
@@ -252,7 +272,15 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public void checkForErrors()
     {
+        print("Nothing here yet");
+    }
 
+    public void PrepareToStartGame()
+    {
+        print("Data Handler PrepareToStartGame called");
+        UIText = null;
+        gameStarted = true;
+        networkManager.StartGame();
     }
 
 }

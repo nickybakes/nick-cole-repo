@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Users;
+using UnityEngine.SceneManagement;
 
 public class NeonHeightsLobbyClient2 : NetworkBehaviour
 {
@@ -12,17 +13,27 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     public int connectionId;
     private int numGamePads, numKeyboards;
     public GameObject PlayerCursor;
+    public GameObject Player;
     public InputAction anyButtonPressedGamePad, anyButtonPressedKeyboard;
     private List<PlayerLobbyCursor> playerCursors;
+    private List<NeonHeightsPlayer> players;
+    private Dictionary<int, InputDevice> deviceList;
+    private bool gameStarted;
     // Start is called before the first frame update
     void Start()
     {
+        DontDestroyOnLoad(this.gameObject);
         playerCursors = new List<PlayerLobbyCursor>();
+        players = new List<NeonHeightsPlayer>();
         numGamePads = 0;
         numKeyboards = 0;
         dataHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>();
+        SceneManager.activeSceneChanged += OnSceneChanged;
+        gameStarted = false;
         if (!isLocalPlayer)
             return;
+
+        deviceList = new Dictionary<int, InputDevice>();
 
         if (dataHandler.playerConnectionIDs.Count > 0)
             connectionId = dataHandler.playerConnectionIDs[dataHandler.playerConnectionIDs.Count - 1];
@@ -108,6 +119,16 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     }
 
     [Command]
+    void CmdAddPlayerInGame(GameObject owner, int pNum)
+    {
+        print("CmdAddPlayerInGameCalled");
+        ClientScene.RegisterPrefab(Player);
+        GameObject curPlayer = Instantiate(Player, new Vector3(0, 0, 50), Quaternion.identity);
+        curPlayer.GetComponent<NeonHeightsPlayer>().InitializePlayer(pNum);
+        NetworkServer.Spawn(curPlayer, owner);
+    }
+
+    [Command]
     void CmdRemovePlayer(int pNum)
     {
         dataHandler.RemovePlayer(pNum);
@@ -115,10 +136,27 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
 
     public void AddCursor(PlayerLobbyCursor cursor)
     {
+        print("AddCursor called");
         playerCursors.Add(cursor);
         foreach(PlayerLobbyCursor curCursor in playerCursors)
         {
             curCursor.PairToDevice();
+        }
+        GetDeviceList();
+    }
+
+    public void AddPlayer(NeonHeightsPlayer player)
+    {
+        players.Add(player);
+        foreach(NeonHeightsPlayer curPlayer in players)
+        {
+            InputDevice curDevice = null;
+            if (deviceList.TryGetValue(curPlayer.GetPlayerNum(),out curDevice))
+            {
+                curPlayer.PairToDevice(curDevice);
+            }
+            else
+                print("Something went wrong in AddPlayer");
         }
     }
 
@@ -141,30 +179,52 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         }
         else
             numGamePads--;
+        GetDeviceList();
     }
 
-
-
-    /*
-    Psuedocode
-
-    OnSpaceBarPressed / On Join Game Locally pressed(){
-        Instantiate(CursorPrefabWithNetworkIdentityandNetworkTransform);
-        CmdAddPlayerInformationToDataHandler();
+    public void GetDeviceList()
+    {
+        deviceList.Clear();
+        foreach(PlayerLobbyCursor cursor in playerCursors)
+        {
+            deviceList.Add(cursor.GetPlayerNum(), cursor.GetDevice());
+        }
     }
 
-    [Command] //to change any synced variable you must use decorator Command (and function must start with Cmd)
-    CmdAddPlayerInformationToDataHandler{
-        dataHandler.players.add(new Player(information info);
-        dataHandler.numPlayers++;
+    public void OnSceneChanged(Scene current, Scene next)
+    {
+        if (!isLocalPlayer)
+            return;
+
+        print("Scene changed spotted in lobbyClient");
+
+        print(dataHandler.gameStarted);
+
+        gameStarted = true;
+        AddAllCharacters();
     }
 
-    (In Cursor Controller + PlayerCharacter and shtuff)
-    I beleive (this hasnot been tested) that anything instantiated by this client has the right client authority
-    if(isLocalPlayer){
-        //do things 
+    public void AddAllCharacters()
+    {
+        print("AddAllCharacters called: " + deviceList.Count);
+        foreach(KeyValuePair<int, InputDevice> player in deviceList)
+        {
+            print("Player: " + player);
+            CmdAddPlayerInGame(this.gameObject, player.Key);
+        }
     }
 
+    public void PrepareToStartGame()
+    {
+        print("prepareToStartGame called");
+        playerCursors = null;
+        CmdPrepareToStartGame();
+    }
 
-    */
+    [Command]
+    public void CmdPrepareToStartGame()
+    {
+        print("CmdPrepareToStartGame");
+        dataHandler.PrepareToStartGame();
+    }
 }

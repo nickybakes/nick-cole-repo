@@ -28,6 +28,7 @@ public class NeonHeightsLobbyManager : NetworkManager
         try
         {
             dataHandler = GameObject.Find("NetworkDataHandler").GetComponent(typeof(NeonHeightsDataHandler)) as NeonHeightsDataHandler;
+            dataHandler.SetNetworkManager(this);
         } catch (Exception e)
         {
             dataHandler = null;
@@ -42,6 +43,7 @@ public class NeonHeightsLobbyManager : NetworkManager
         {
             print("looking for datahandler");
             dataHandler = GameObject.Find("NetworkDataHandler").GetComponent(typeof(NeonHeightsDataHandler)) as NeonHeightsDataHandler;
+            dataHandler.SetNetworkManager(this);
         }
 
         Transform startPos = base.GetStartPosition();
@@ -83,5 +85,31 @@ public class NeonHeightsLobbyManager : NetworkManager
 
 
         // add whatever data is needed 
+    }
+
+    public void StartGame()
+    {
+        print("Network Manager StartGame called");
+        string nextScene = dataHandler.nextLevel;
+
+        //for strikeout, nextLevel could equal something like
+        //"strikeout;map1,map2,map3" and this function could parse that string, recognizing
+        //that strikeout is the mode and that every map following, separated by a comma is a map 
+        //that can't be chosen
+        // then the server could choose a map excluding those
+        //with a special method or just by calling ChooseRandomScene until the map isn't one of the struck out ones
+        // i'm thinking special method is the way to go bc ChooseRandomScene will be slow as fuck, especially if it needs to 
+        //look in the map directory to see which maps are available
+
+        if (nextScene == "random") // code for choosing random scene goes here
+            nextScene = "TestGameScene"; // ChooseRandomScene();
+    
+        //try
+        ServerChangeScene(nextScene);
+        //catch(Exception e){
+        //level name was not found
+        //nextScene = ChooseRandomScene();
+        //ServerChangeScene(nextScene);
+        //}
     }
 }

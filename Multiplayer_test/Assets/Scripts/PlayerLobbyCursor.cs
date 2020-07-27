@@ -23,7 +23,7 @@ public class PlayerLobbyCursor : NetworkBehaviour
     public Text usernameText;
 
     private PlayerInput playerInput;
-    private bool initialized = false;
+    [SyncVar] private bool initialized = false;
     private InputDevice device;
 
     private int speed = 7;
@@ -49,6 +49,15 @@ public class PlayerLobbyCursor : NetworkBehaviour
             playerInput.neverAutoSwitchControlSchemes = true;
             clientHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>().GetLocalClient();
 
+            if (keyboardControlled)
+            {
+                device = Keyboard.current;
+            }
+            else
+            {
+                device = Gamepad.current;
+            }
+
             if (initialized)
             {
                 clientHandler.AddCursor(this);
@@ -64,6 +73,11 @@ public class PlayerLobbyCursor : NetworkBehaviour
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
         cursorImage.color = cursorColors[playerIndex];
         usernameText.text = "gamepad " + gamepadDeviceId;
+    }
+
+    public InputDevice GetDevice()
+    {
+        return device;
     }
 
     public void PairToDevice()
@@ -90,15 +104,6 @@ public class PlayerLobbyCursor : NetworkBehaviour
 
         print("keyboardControlled: " + keyboardControlled);
 
-        if (keyboardControlled)
-        {
-            device = Keyboard.current;
-        }
-        else
-        {
-            device = Gamepad.current;
-        } 
-        
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
         cursorImage.color = cursorColors[playerIndex];
@@ -125,11 +130,16 @@ public class PlayerLobbyCursor : NetworkBehaviour
             return;
 
         print("select called");
+
+        clientHandler.PrepareToStartGame();
     }
 
     public void OnLeave(InputValue value)
     {
         if (!hasAuthority)
+            return;
+
+        if (!Application.isFocused)
             return;
         clientHandler.PlayerLeave(this.GetPlayerNum(), keyboardControlled);
     }

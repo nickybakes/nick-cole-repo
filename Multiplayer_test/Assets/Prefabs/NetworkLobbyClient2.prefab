@@ -65,6 +65,7 @@ MonoBehaviour:
   connectionId: 0
   PlayerCursor: {fileID: 7100962875590565104, guid: a214d06e8a73a8c40a45b9091c434416,
     type: 3}
+  Player: {fileID: 1431545778218273712, guid: 4745c5d9b4713d24d97864aaa1d7c7f7, type: 3}
   anyButtonPressedGamePad:
     m_Name: Any Button Pressed Game Pad
     m_Type: 0
