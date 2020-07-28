@@ -12,11 +12,13 @@ public class GameManager : MonoBehaviour
     public GameObject hexPrefab;
 
     private Hex[,] boardData;
-
+    private Vector2 playerCoord;
+    private Position playerPosition;
 
     private bool mouseDragging;
     private Vector2 mouseDragStart;
     private Vector2 boardDragStart;
+    
 
 
     // Start is called before the first frame update
@@ -27,6 +29,11 @@ public class GameManager : MonoBehaviour
 
     // Update is called once per frame
     void Update()
+    {
+        UpdateControls();
+    }
+
+    void UpdateControls()
     {
         if (Input.mouseScrollDelta.y < 0)
         {
@@ -42,9 +49,9 @@ public class GameManager : MonoBehaviour
             mouseDragStart = Input.mousePosition;
             boardDragStart = gameBoard.transform.position;
         }
-        if(mouseDragging)
+        if (mouseDragging)
         {
-            gameBoard.transform.position = (Vector3) (boardDragStart - mouseDragStart + (Vector2)Input.mousePosition);
+            gameBoard.transform.position = (Vector3)(boardDragStart - mouseDragStart + (Vector2)Input.mousePosition);
         }
         if (Input.GetMouseButtonUp(2))
         {
@@ -93,7 +100,7 @@ public class GameManager : MonoBehaviour
                     if (x != boardData.GetLength(0) - 1 && y % 2 != 0)
                     {
                         Destroy(hex.edgeButtons[(int)Edge.RightTop]);
-                        hex.edgeButtons[(int)Edge.RightTop] = boardData[x, y - 1].edgeButtons[(int)Edge.LeftBot];
+                        hex.edgeButtons[(int)Edge.RightTop] = boardData[x + 1, y - 1].edgeButtons[(int)Edge.LeftBot];
                     }
                     if (y % 2 == 0)
                     {
@@ -106,6 +113,47 @@ public class GameManager : MonoBehaviour
                 {
                     Destroy(hex.edgeButtons[(int)Edge.LeftMid]);
                     hex.edgeButtons[(int)Edge.LeftMid] = boardData[x - 1, y].edgeButtons[(int)Edge.RightMid];
+                }
+
+                //go through the corners and do the same thing
+                if (y != 0)
+                {
+                    if (x != 0 && y % 2 == 0)
+                    {
+                        Destroy(hex.positions[(int)Position.Top]);
+                        hex.positions[(int)Position.Top] = boardData[x, y - 1].positions[(int)Position.RightBot];
+                        Destroy(hex.positions[(int)Position.LeftTop]);
+                        hex.positions[(int)Position.LeftTop] = boardData[x, y - 1].positions[(int)Position.Bot];
+                    }
+                    //else if (y % 2 != 0)
+                    //{
+                    //    Destroy(hex.positions[(int)Position.Top]);
+                    //    hex.positions[(int)Position.Top] = boardData[x, y - 1].positions[(int)Position.RightBot];
+                    //    Destroy(hex.positions[(int)Position.LeftTop]);
+                    //    hex.positions[(int)Position.LeftTop] = boardData[x, y - 1].positions[(int)Position.Bot];
+                    //}
+                    if (x != boardData.GetLength(0) - 1 && y % 2 != 0)
+                    {
+                        Destroy(hex.positions[(int)Position.Top]);
+                        hex.positions[(int)Position.Top] = boardData[x + 1, y - 1].positions[(int)Position.RightBot];
+                        Destroy(hex.positions[(int)Position.RightTop]);
+                        hex.positions[(int)Position.RightTop] = boardData[x + 1, y - 1].positions[(int)Position.Bot];
+                    }
+                    //else if (y % 2 == 0)
+                    //{
+                    //    Destroy(hex.positions[(int)Position.Top]);
+                    //    hex.positions[(int)Position.Top] = boardData[x, y - 1].positions[(int)Position.RightBot];
+                    //    Destroy(hex.positions[(int)Position.RightTop]);
+                    //    hex.positions[(int)Position.RightTop] = boardData[x, y - 1].positions[(int)Position.Bot];
+                    //}
+                }
+
+                if (x != 0)
+                {
+                    Destroy(hex.positions[(int)Position.LeftTop]);
+                    hex.positions[(int)Position.LeftTop] = boardData[x - 1, y].positions[(int)Position.RightTop];
+                    Destroy(hex.positions[(int)Position.LeftBot]);
+                    hex.positions[(int)Position.LeftBot] = boardData[x - 1, y].positions[(int)Position.RightBot];
                 }
             }
         }
