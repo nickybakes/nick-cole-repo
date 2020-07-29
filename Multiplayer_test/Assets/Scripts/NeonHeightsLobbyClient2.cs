@@ -19,6 +19,7 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     private List<NeonHeightsPlayer> players;
     private Dictionary<int, InputDevice> deviceList;
     private bool gameStarted;
+    public bool playersCanMove;
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +31,7 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         dataHandler = GameObject.FindObjectOfType<NeonHeightsDataHandler>();
         SceneManager.activeSceneChanged += OnSceneChanged;
         gameStarted = false;
+        playersCanMove = false;
         if (!isLocalPlayer)
             return;
 
@@ -220,6 +222,17 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         print("prepareToStartGame called");
         playerCursors = null;
         CmdPrepareToStartGame();
+    }
+
+    public void SetPlayersCanMove()
+    {
+        if (playersCanMove)
+            return;
+        foreach(NeonHeightsPlayer curPlayer in players)
+        {
+            curPlayer.canMove = true;
+        }
+        playersCanMove = true;
     }
 
     [Command]

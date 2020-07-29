@@ -76,14 +76,17 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public const int MAX_PLAYERS = 8;
 
-    public Text UIText;
+    public Text UIText, CountdownText;
 
     public NeonHeightsLobbyClient2 localClient;
 
     public int connectionId;
+    public const int COUNTDOWN_LENGTH = 5;
     [SyncVar] public string nextLevel;
     [SyncVar] public int numberOfPlayers;
     [SyncVar] public bool gameStarted;
+    [SyncVar] public int countdownTimer;
+    float curCountdownTime = 0;
     public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
     public SyncListInt playerConnectionIDs = new SyncListInt();
@@ -94,6 +97,7 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        countdownTimer = COUNTDOWN_LENGTH;
         DontDestroyOnLoad(this.gameObject);
         if (isServer)
         {
@@ -160,6 +164,60 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     void Update()
     {
         UpdateUIText();
+        if (gameStarted && countdownTimer >= 0)
+            Countdown();
+        else
+        {
+            if (CountdownText != null)
+                CountdownText.text = "";
+        }
+    }
+
+    void Countdown()
+    {
+        if (CountdownText == null)
+        {
+            try
+            {
+                CountdownText = GameObject.Find("CountdownText").GetComponent<Text>();
+            }
+            catch (Exception e)
+            {
+                return;
+            }
+        }
+
+        print("Countdown: " + CountdownText);
+
+        print("Countdown Timer: " + countdownTimer);
+
+        if (countdownTimer == COUNTDOWN_LENGTH && curCountdownTime == 0)
+            curCountdownTime = Time.time;
+        if (countdownTimer > 0)
+            CountdownText.text = countdownTimer.ToString();
+        else
+        {
+            CountdownText.text = "Start!";
+            if (!localClient.playersCanMove)
+                localClient.SetPlayersCanMove();
+        }
+
+        print("Cur countdown time: " + curCountdownTime);
+        print("Time left: " + (Time.time - curCountdownTime));
+
+        if((Time.time - curCountdownTime) >= 2)
+        {
+            curCountdownTime = Time.time;
+
+            if (countdownTimer == 0)
+            {
+                CountdownText.text = "";
+                print("Called");
+            }
+
+            if (isServer)
+                countdownTimer--;
+        }
     }
 
     void UpdateUIText()

@@ -17,6 +17,7 @@ public class NeonHeightsPlayer : NetworkBehaviour
     [SyncVar] private bool keyboardControlled;
     private int gamepadDeviceId;
     private Vector2 moveVector;
+    public bool canMove;
 
     private NeonHeightsLobbyClient2 clientHandler;
 
@@ -28,6 +29,7 @@ public class NeonHeightsPlayer : NetworkBehaviour
         }
         else
         {
+            canMove = false;
             playerInput = gameObject.GetComponent<PlayerInput>();
             print("PlayerInput: " + playerInput);
             playerInput.neverAutoSwitchControlSchemes = true;
@@ -88,14 +90,8 @@ public class NeonHeightsPlayer : NetworkBehaviour
         moveVector = value.Get<Vector2>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Move()
     {
-        if (!hasAuthority)
-            return;
-
-        if (!Application.isFocused)
-            return;
 
         float transformX = gameObject.transform.position.x + moveVector.x;
         float transformY = gameObject.transform.position.y + moveVector.y;
@@ -111,5 +107,20 @@ public class NeonHeightsPlayer : NetworkBehaviour
             transformY = 0;
 
         gameObject.transform.position = new Vector3(transformX, transformY, gameObject.transform.position.z);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (!hasAuthority)
+            return;
+
+        if (!Application.isFocused)
+            return;
+
+        if (canMove)
+        {
+            Move();
+        }
     }
 }
