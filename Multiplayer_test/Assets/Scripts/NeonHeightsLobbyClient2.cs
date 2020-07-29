@@ -123,9 +123,10 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     {
         print("CmdAddPlayerInGameCalled");
         ClientScene.RegisterPrefab(Player);
-        GameObject curPlayer = Instantiate(Player, new Vector3(0, 0, 50), Quaternion.identity);
+        GameObject curPlayer = Instantiate(Player, dataHandler.GetPlayerSpawn(pNum), Quaternion.identity);
         curPlayer.GetComponent<NeonHeightsPlayer>().InitializePlayer(pNum);
         NetworkServer.Spawn(curPlayer, owner);
+        dataHandler.AddPlayerObject(curPlayer, pNum);
     }
 
     [Command]

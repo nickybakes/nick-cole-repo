@@ -87,8 +87,9 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
     public SyncListInt playerConnectionIDs = new SyncListInt();
-    public GameObject[] playerCursors;
+    public GameObject[] playerObjects;
     public NeonHeightsLobbyManager networkManager;
+    public NeonHeightsSpawnManager spawnManager; 
 
     // Start is called before the first frame update
     void Start()
@@ -96,13 +97,14 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         DontDestroyOnLoad(this.gameObject);
         if (isServer)
         {
-            playerCursors = new GameObject[] { null, null, null, null, null, null, null, null };
+            playerObjects = new GameObject[] { null, null, null, null, null, null, null, null };
         }
         else
         {
-            playerCursors = null;
+            playerObjects = null;
             networkManager = null;
         }
+        spawnManager = null;
         localClient = GameObject.FindObjectOfType<NeonHeightsLobbyClient2>();
 
         connectionId = -1;
@@ -182,9 +184,9 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         {
             numberOfPlayers++;
             int curNum = 0;
-            for(int i = 0; i < playerCursors.Length; i++)
+            for(int i = 0; i < playerObjects.Length; i++)
             {
-                if(playerCursors[i] == null)
+                if(playerObjects[i] == null)
                 {
                     curNum = i;
                     break;
@@ -199,8 +201,13 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public void AddCursorObject(GameObject playerCursor, int pNum)
     {
-        playerCursors[pNum - 1] = playerCursor;
+        playerObjects[pNum - 1] = playerCursor;
         print("Adding to index " + (pNum - 1));
+    }
+
+    public void AddPlayerObject(GameObject player, int pNum)
+    {
+        playerObjects[pNum - 1] = player;
     }
 
     public void resetData()
@@ -232,14 +239,23 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public void RemovePlayer(Player player)
     {
-        print("RemovePlayerCalled");
+        print("RemovePlayerCalled: " + player);
         players.Remove(player);
         numberOfPlayers--;
 
-        GameObject cursor = playerCursors[player.playerNum-1];
-        if (cursor != null && cursor.GetComponent<PlayerLobbyCursor>().GetPlayerNum() == player.playerNum)
+        GameObject cursor = playerObjects[player.playerNum-1];
+
+        int curPlayerNum = 0;
+        if (cursor.GetComponent<PlayerLobbyCursor>() != null)
+            curPlayerNum = cursor.GetComponent<PlayerLobbyCursor>().GetPlayerNum();
+        else if (cursor.GetComponent<NeonHeightsPlayer>() != null)
+            curPlayerNum = cursor.GetComponent<NeonHeightsPlayer>().GetPlayerNum();
+        else
+            print("something has gone wrong!!");
+
+        if (cursor != null && curPlayerNum == player.playerNum)
         {
-            playerCursors[player.playerNum - 1] = null;
+            playerObjects[player.playerNum - 1] = null;
             Destroy(cursor);
         }
         else
@@ -280,7 +296,60 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         print("Data Handler PrepareToStartGame called");
         UIText = null;
         gameStarted = true;
+        playerObjects = new GameObject[]{null, null, null, null, null, null, null, null};
         networkManager.StartGame();
+    }
+
+    public Vector3 GetPlayerSpawn(int pNum)
+    {
+        if (spawnManager == null)
+            spawnManager = GameObject.FindObjectOfType<NeonHeightsSpawnManager>();
+
+        Player curPlayer = null;
+
+        foreach (Player player in players) {
+            if(player.playerNum == pNum)
+            {
+                curPlayer = player;
+                break;
+            }
+        }
+
+        Vector3 toReturn = spawnManager.GetNextSpawn(curPlayer.team);
+        return toReturn;
+    }
+
+    private Player GetPlayer(int pNum)
+    {
+        Player toReturn = null;
+        foreach(Player player in players)
+        {
+            if(player.playerNum == pNum)
+            {
+                toReturn = player;
+                break;
+            }
+        }
+        return toReturn;
+    }
+
+    public void SetCharacter(int pNum, SelectedCharacter toSet)
+    {
+        Player curPlayer = GetPlayer(pNum);
+        if (curPlayer == null)
+            return;
+
+        curPlayer.character = toSet;
+
+    }
+
+    public void SetTeam(int pNum, TeamJoined toSet)
+    {
+        Player curPlayer = GetPlayer(pNum);
+        if (curPlayer == null)
+            return;
+
+        curPlayer.team = toSet;
     }
 
 }

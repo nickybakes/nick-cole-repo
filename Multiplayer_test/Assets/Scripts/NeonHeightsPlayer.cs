@@ -54,6 +54,8 @@ public class NeonHeightsPlayer : NetworkBehaviour
 
         this.device = device;
 
+        playerInput.user.UnpairDevices();
+
         print("Input user: " + InputUser.PerformPairingWithDevice(device, playerInput.user, InputUserPairingOptions.None));
         print("Paired devices: " + playerInput.user.pairedDevices.Count);
         print("Lost Devices: " + playerInput.user.lostDevices.Count);
