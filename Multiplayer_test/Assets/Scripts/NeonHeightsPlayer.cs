@@ -5,6 +5,8 @@ using Mirror;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Users;
+using UnityEngine.Rendering;
+using System;
 
 public class NeonHeightsPlayer : NetworkBehaviour
 {
@@ -12,6 +14,7 @@ public class NeonHeightsPlayer : NetworkBehaviour
     private PlayerInput playerInput;
     [SyncVar] private bool initialized = false;
     private InputDevice device;
+
 
     [SyncVar] private int playerIndex;
     [SyncVar] private bool keyboardControlled;

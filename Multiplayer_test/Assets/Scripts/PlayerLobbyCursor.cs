@@ -5,9 +5,14 @@ using Mirror;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Users;
+using System;
+using System.Net;
 
 public class PlayerLobbyCursor : NetworkBehaviour
 {
+    private const int WIDTH = 1920;
+    private const int HEIGHT = 1080;
+
     private static Color32[] cursorColors = {new Color32(255, 40, 40, 255), new Color32(17, 61, 255, 255), new Color32(255, 246, 9, 255), new Color32(0, 188, 37, 255),
     new Color32(252, 156, 2, 255), new Color32(135, 19, 193, 255), new Color32(255, 0, 238, 255), new Color32(2, 214, 221, 255), new Color32(40,40,40, 255)};
 
@@ -16,6 +21,7 @@ public class PlayerLobbyCursor : NetworkBehaviour
     private Vector2 movementInput;
 
     private Canvas canvas;
+    private RectTransform canvasRectTransform;
 
     public Text playerNumberText;
     public Text playerNumberTextShadow;
@@ -26,7 +32,7 @@ public class PlayerLobbyCursor : NetworkBehaviour
     [SyncVar] private bool initialized = false;
     private InputDevice device;
 
-    private int speed = 7;
+    private int speed = 20;
 
     [SyncVar] private int playerIndex;
     [SyncVar] private bool keyboardControlled;
@@ -65,10 +71,11 @@ public class PlayerLobbyCursor : NetworkBehaviour
         }
 
         cursorInput = new CursorInput();
-
-
         canvas = GameObject.FindObjectOfType<Canvas>();
+        canvasRectTransform = canvas.GetComponent<RectTransform>();
         transform.SetParent(canvas.transform);
+        transform.position = new Vector2(canvas.pixelRect.width/ 2, canvas.pixelRect.height/ 2);
+        gameObject.transform.localScale = new Vector3(1, 1, 1);
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
         cursorImage.color = cursorColors[playerIndex];
@@ -143,29 +150,54 @@ public class PlayerLobbyCursor : NetworkBehaviour
             return;
         clientHandler.PlayerLeave(this.GetPlayerNum(), keyboardControlled);
     }
+
+
     // Update is called once per frame
     void Update()
     {
+
         if (!hasAuthority)
             return;
 
         if (!Application.isFocused)
             return;
 
-        float transformX = gameObject.transform.position.x + moveVector.x;
-        float transformY = gameObject.transform.position.y + moveVector.y;
+        //screenPosX += moveVector.x * movementSpeed;
+        //screenPosY += moveVector.y * movementSpeed;
 
-        if (transformX > Screen.width - (Screen.width/2))
-            transformX = Screen.width - (Screen.width/2);
-        else if (transformX < 0 - (Screen.width/2))
-            transformX = 0 - (Screen.width/2);
+        //screenPosX = Math.Min(.5f, Math.Max(-.5f, screenPosX));
+        //screenPosY = Math.Min(.5f, Math.Max(-.5f, screenPosY));
 
-        if (transformY > Screen.height - (Screen.height / 2))
-            transformY = Screen.height - (Screen.height / 2);
-        else if (transformY < 0 - (Screen.height / 2))
-            transformY = 0;
+        //float canvasWidth = canvas.transform.localScale.x * WIDTH;
+        //float canvasHeight = canvas.transform.localScale.y * HEIGHT;
 
-        gameObject.transform.position = new Vector3(transformX, transformY, gameObject.transform.position.z);
+        //float transformX = Math.Min(canvasWidth / 2, Math.Max(canvasWidth / -2, canvasWidth * screenPosX));
+        //float transformY = Math.Min(canvasHeight / 2, Math.Max(canvasHeight / -2, canvasHeight * screenPosY));
+
+        //gameObject.transform.localScale = new Vector3(1, 1, 1);
+        //gameObject.transform.position = new Vector3(transformX, transformY, gameObject.transform.position.z);
+
+
+
+        //if (transformX > Screen.width - (Screen.width / 2))
+        //    transformX = Screen.width - (Screen.width / 2);
+        //else if (transformX < 0 - (Screen.width / 2))
+        //    transformX = 0 - (Screen.width / 2);
+
+        //if (transformY > Screen.height - (Screen.height / 2))
+        //    transformY = Screen.height - (Screen.height / 2);
+        //else if (transformY < 0 - (Screen.height / 2))
+        //    transformY = 0;
+
+        float transformX = gameObject.transform.position.x + (moveVector.x * speed * canvas.transform.localScale.x);
+        float transformY = gameObject.transform.position.y + (moveVector.y * speed * canvas.transform.localScale.y);
+        transformX = Mathf.Clamp(transformX, 0, canvasRectTransform.rect.width * canvas.transform.localScale.x);
+        transformY = Mathf.Clamp(transformY, 0, canvasRectTransform.rect.height * canvas.transform.localScale.y);
+
+        gameObject.transform.position = new Vector2(transformX, transformY);
+
+        //gameObject.transform.position = new Vector3(Math.Min(WIDTH/2, Math.Max(-WIDTH/2, transformX)),
+        //    Math.Min(1080, Math.Max(0, transformY)), gameObject.transform.position.z);
     }
 
 
