@@ -93,6 +93,20 @@ public class NeonHeightsPlayer : NetworkBehaviour
         moveVector = value.Get<Vector2>();
     }
 
+    public void OnUltimate(InputValue value)
+    {
+        if (!canMove)
+            return;
+
+        if (!hasAuthority)
+            return;
+
+        if (!Application.isFocused)
+            return;
+
+        clientHandler.PlayerUltimate(GetPlayerNum());
+    }
+
     public void Move()
     {
 

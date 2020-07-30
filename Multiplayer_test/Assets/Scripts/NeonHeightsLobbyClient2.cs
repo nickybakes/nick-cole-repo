@@ -108,15 +108,18 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     void CmdAddPlayer(int connId, GameObject owner, bool keyBoardControlled)
     {
         print("Connection ID: " + connId);
-        int pNum = dataHandler.AddPlayer(connId);
+        ClientScene.RegisterPrefab(PlayerCursor);
+        GameObject curCursor = Instantiate(PlayerCursor, new Vector3(0, 0, 50), Quaternion.identity);
+        int pNum = dataHandler.AddPlayer(connId, curCursor);
         if (pNum != -1)
         {
-            print("CmdAddPlayer pNum: " + pNum);
-            ClientScene.RegisterPrefab(PlayerCursor);
-            GameObject curCursor = Instantiate(PlayerCursor, new Vector3(0, 0, 50), Quaternion.identity);
             curCursor.GetComponent<PlayerLobbyCursor>().InitializePlayerCursor(pNum, keyBoardControlled);
             NetworkServer.Spawn(curCursor, owner);
             dataHandler.AddCursorObject(curCursor, pNum);
+        }
+        else
+        {
+            Destroy(curCursor);
         }
     }
 
@@ -240,5 +243,16 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     {
         print("CmdPrepareToStartGame");
         dataHandler.PrepareToStartGame();
+    }
+
+    public void PlayerUltimate(int pNum)
+    {
+        CmdPlayerUltimate(pNum);
+    }
+
+    [Command]
+    public void CmdPlayerUltimate(int pNum)
+    {
+        dataHandler.PlayerUltimate(pNum);
     }
 }

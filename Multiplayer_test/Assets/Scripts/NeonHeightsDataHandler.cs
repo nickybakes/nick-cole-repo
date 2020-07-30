@@ -76,6 +76,8 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public const int MAX_PLAYERS = 8;
 
+    public const int EVENT_NONE = 0, EVENT_PLAYER_ULT = 1;
+
     public Text UIText, CountdownText;
 
     public NeonHeightsLobbyClient2 localClient;
@@ -86,7 +88,9 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     [SyncVar] public int numberOfPlayers;
     [SyncVar] public bool gameStarted;
     [SyncVar] public int countdownTimer;
-    float curCountdownTime = 0;
+    [SyncVar] public int curEvent, lastEvent;
+    [SyncVar] public int eventParams;
+    float curCountdownTime = 0, eventTimer = -1;
     public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
     public SyncListInt playerConnectionIDs = new SyncListInt();
@@ -98,6 +102,9 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     void Start()
     {
         countdownTimer = COUNTDOWN_LENGTH;
+        curEvent = EVENT_NONE;
+        lastEvent = EVENT_NONE;
+        eventParams = 0;
         DontDestroyOnLoad(this.gameObject);
         if (isServer)
         {
@@ -171,6 +178,70 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             if (CountdownText != null)
                 CountdownText.text = "";
         }
+
+        /* Events can be used to do things like server and client animations or basically
+         * handle things that need to be handled in real time by both server and client 
+         *
+         * curEvent is the current event that is going to be run
+         *  It is important that when making new events you check for curEvent == EVENT_NONE before setting curEvent
+         *  I dont think there will be enough events that this will be a problem, and I think in most cases we don't 
+         *  want other events to be called while there is an event happening, but if there is a situation where we do
+         *  we can make an event queue and make curEvent eventQueue.pop
+         *  
+         *  eventParams are the parameters of the event
+         *  
+         *  eventTimer can be used to time how long the event should be and end it when the timer reaches a certain point
+         *  
+         *  anything that involves changing of variables or instantiating must have a check for isServer and 
+         *  every event must end with 
+         *  if(isServer)
+         *      EndEvent();
+         * 
+         */
+        switch (curEvent)
+        {
+            case EVENT_PLAYER_ULT:
+                HandlePlayerUlt(eventParams);
+                break;
+            default:
+                if(lastEvent != EVENT_NONE)
+                    EventCleanup();
+                break;
+        }
+    }
+
+    void EventCleanup()
+    {
+        switch (lastEvent)
+        {
+            case EVENT_PLAYER_ULT:
+                CountdownText.text = "";
+                break;
+        }
+        lastEvent = EVENT_NONE;
+    }
+
+    void EndEvent()
+    {
+        lastEvent = curEvent;
+        curEvent = EVENT_NONE;
+        eventParams = 0;
+        eventTimer = -1;
+    }
+
+    void HandlePlayerUlt(int pNum)
+    {
+        if (eventTimer == -1)
+            eventTimer = Time.time;
+
+        string ultText = "PLAYER " + pNum + " ULTIMATE!";
+
+        CountdownText.text = ultText;
+
+        if (isServer && ((Time.time - eventTimer) >= 2))
+        {
+            EndEvent();
+        }
     }
 
     void Countdown()
@@ -235,7 +306,7 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         }
     }
 
-    public int AddPlayer(int connID)
+    public int AddPlayer(int connID, GameObject playerCursor)
     {
         int toReturn = -1;
         if (numberOfPlayers < MAX_PLAYERS)
@@ -254,6 +325,10 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             players.Add(new Player(curNum+1, connID));
             toReturn = curNum + 1;
         }
+
+        if(toReturn != -1)
+            AddCursorObject(playerCursor, toReturn);
+
         return toReturn;
     }
 
@@ -408,6 +483,15 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             return;
 
         curPlayer.team = toSet;
+    }
+
+    public void PlayerUltimate(int pNum)
+    {
+        if(curEvent == EVENT_NONE)
+        {
+            curEvent = EVENT_PLAYER_ULT;
+            eventParams = pNum;
+        }
     }
 
 }
