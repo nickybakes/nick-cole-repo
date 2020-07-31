@@ -282,6 +282,7 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         CmdSetCharacter(pNum, character);
     }
 
+    [Command]
     public void CmdSetCharacter(int pNum, SelectedCharacter character)
     {
         dataHandler.SetCharacter(pNum, character);
