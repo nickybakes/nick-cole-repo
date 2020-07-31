@@ -106,7 +106,7 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
 
     bool isInDevices(InputDevice newDevice)
     {
-        toReturn = false;
+        bool toReturn = false;
         foreach(InputDevice device in deviceList.Values)
         {
             if(device.deviceId == newDevice.deviceId)
