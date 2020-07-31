@@ -211,6 +211,20 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         }
     }
 
+    public PlayerLobbyCursor GetKeyboardPlayer()
+    {
+        PlayerLobbyCursor toReturn = null;
+        foreach(PlayerLobbyCursor cursor in playerCursors)
+        {
+            if (cursor.isKeyboardControlled())
+            {
+                toReturn = cursor;
+                break;
+            }
+        }
+        return toReturn;
+    }
+
     public void OnSceneChanged(Scene current, Scene next)
     {
         if (!isLocalPlayer)
@@ -250,6 +264,27 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
             curPlayer.canMove = true;
         }
         playersCanMove = true;
+    }
+
+    public void SetTeam(int pNum, TeamJoined team)
+    {
+        CmdSetTeam(pNum, team);
+    }
+
+    [Command]
+    public void CmdSetTeam(int pNum, TeamJoined team)
+    {
+        dataHandler.SetTeam(pNum, team);
+    }
+
+    public void SetCharacter(int pNum, SelectedCharacter character)
+    {
+        CmdSetCharacter(pNum, character);
+    }
+
+    public void CmdSetCharacter(int pNum, SelectedCharacter character)
+    {
+        dataHandler.SetCharacter(pNum, character);
     }
 
     [Command]

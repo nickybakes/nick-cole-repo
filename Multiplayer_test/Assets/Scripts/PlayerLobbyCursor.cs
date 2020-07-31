@@ -75,12 +75,17 @@ public class PlayerLobbyCursor : NetworkBehaviour
         canvas = GameObject.FindObjectOfType<Canvas>();
         canvasRectTransform = canvas.GetComponent<RectTransform>();
         transform.SetParent(canvas.transform);
-        transform.position = new Vector2(canvas.pixelRect.width/ 2, canvas.pixelRect.height/ 2);
+        transform.position = new Vector2(canvas.pixelRect.width / 2, canvas.pixelRect.height / 2);
         gameObject.transform.localScale = new Vector3(1, 1, 1);
         playerNumberText.text = "P" + (playerIndex + 1);
         playerNumberTextShadow.text = "P" + (playerIndex + 1);
         cursorImage.color = cursorColors[playerIndex];
         usernameText.text = "gamepad " + gamepadDeviceId;
+    }
+
+    public bool isKeyboardControlled()
+    {
+        return keyboardControlled;
     }
 
     public InputDevice GetDevice()
@@ -141,8 +146,21 @@ public class PlayerLobbyCursor : NetworkBehaviour
             selectedButton.SelectAction(this);
 
         //print("select called");
+    }
 
-        //clientHandler.PrepareToStartGame();
+    public void StartGame()
+    {
+        clientHandler.PrepareToStartGame();
+    }
+
+    public void SetCharacter(SelectedCharacter character)
+    {
+        clientHandler.SetCharacter(GetPlayerNum(), character);
+    }
+
+    public void SetTeam(TeamJoined team)
+    {
+        clientHandler.SetTeam(GetPlayerNum(), team);
     }
 
     public void OnLeave(InputValue value)

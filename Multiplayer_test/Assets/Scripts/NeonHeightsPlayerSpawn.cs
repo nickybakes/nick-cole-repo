@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NeonHeightsPlayerSpawn : MonoBehaviour
 {
-    public NeonHeightsDataHandler.TeamJoined team;
+    public TeamJoined team;
     private NeonHeightsSpawnManager spawnManager; 
     public int spawnNum;
 

@@ -18,7 +18,7 @@ public class NeonHeightsSpawnManager : MonoBehaviour
         }
     }
 
-    public PlayerSpawn[] redTeamSpawns, blueTeamSpawns;
+    public PlayerSpawn[] championSpawns, underdogSpawns;
 
     // Start is called before the first frame update
     void Start()
@@ -30,8 +30,8 @@ public class NeonHeightsSpawnManager : MonoBehaviour
     {
         if (!initialized)
         {
-            redTeamSpawns = new PlayerSpawn[] { null, null, null, null };
-            blueTeamSpawns = new PlayerSpawn[] { null, null, null, null };
+            championSpawns = new PlayerSpawn[] { null, null, null, null };
+            underdogSpawns = new PlayerSpawn[] { null, null, null, null };
             redIndex = 0;
             blueIndex = 0;
             initialized = true;
@@ -43,10 +43,10 @@ public class NeonHeightsSpawnManager : MonoBehaviour
         InitializeSpawns();
         PlayerSpawn curPlayer = new PlayerSpawn(spawn.transform.position);
 
-        if (spawn.team == NeonHeightsDataHandler.TeamJoined.Red)
-            AddSpawn(redTeamSpawns,curPlayer);
-        else if (spawn.team == NeonHeightsDataHandler.TeamJoined.Blue)
-            AddSpawn(blueTeamSpawns, curPlayer);
+        if (spawn.team == TeamJoined.Champions)
+            AddSpawn(championSpawns,curPlayer);
+        else if (spawn.team == TeamJoined.Underdogs)
+            AddSpawn(underdogSpawns, curPlayer);
     }
 
     public void AddSpawn(PlayerSpawn[] curTeam, PlayerSpawn curSpawn)
@@ -62,13 +62,13 @@ public class NeonHeightsSpawnManager : MonoBehaviour
         }
     }
 
-    public Vector3 GetNextSpawn(NeonHeightsDataHandler.TeamJoined curTeam)
+    public Vector3 GetNextSpawn(TeamJoined curTeam)
     {
         Vector3 toReturn = defaultSpawn;
-        PlayerSpawn[] curTeamSpawns = redTeamSpawns;
-        if (curTeam == NeonHeightsDataHandler.TeamJoined.Red)
+        PlayerSpawn[] curTeamSpawns = championSpawns;
+        if (curTeam == TeamJoined.Champions)
         {
-            curTeamSpawns = redTeamSpawns;
+            curTeamSpawns = championSpawns;
 
             int index = redIndex;
 
@@ -77,9 +77,9 @@ public class NeonHeightsSpawnManager : MonoBehaviour
             if (index < curTeamSpawns.Length - 1 && curTeamSpawns[index + 1] != null)
                 redIndex++;
         }
-        else if(curTeam == NeonHeightsDataHandler.TeamJoined.Blue)
+        else if(curTeam == TeamJoined.Underdogs)
         {
-            curTeamSpawns = blueTeamSpawns;
+            curTeamSpawns = underdogSpawns;
             int index = blueIndex;
 
             if (curTeamSpawns[index] != null)

@@ -52,28 +52,6 @@ public class NeonHeightsDataHandler : NetworkBehaviour
 
     public class SyncListPlayer : SyncList<Player> { }
 
-
-    public enum TeamJoined
-    {
-        Red,
-        Blue,
-        Unassigned
-    }
-
-    public enum SelectedCharacter
-    {
-        Unassigned = -2,
-        Random = -1,
-        Poppy,
-        Suit,
-        Copper,
-        Digit,
-        Expo,
-        Creed,
-        Groove,
-        Electra
-    }
-
     public const int MAX_PLAYERS = 8;
 
     public const int EVENT_NONE = 0, EVENT_PLAYER_ULT = 1;
