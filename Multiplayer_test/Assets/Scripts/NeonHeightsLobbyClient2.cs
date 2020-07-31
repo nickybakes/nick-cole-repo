@@ -87,12 +87,12 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
 
         bool addPlayer = false;
         bool keyBoardControlled = false;
-        if (device == GAMEPAD && numGamePads < Gamepad.all.Count)
+        if (device == GAMEPAD && numGamePads < Gamepad.all.Count && !isInDevices(Gamepad.current))
         {
             numGamePads++;
             addPlayer = true;
         }
-        else if (device == KEYBOARD && numKeyboards == 0)
+        else if (device == KEYBOARD && numKeyboards == 0 && !isInDevices(Keyboard.current))
         {
             print("adding keyboard");
             numKeyboards++;
@@ -102,6 +102,20 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
 
         if (addPlayer)
             CmdAddPlayer(connectionId, this.gameObject, keyBoardControlled);
+    }
+
+    bool isInDevices(InputDevice newDevice)
+    {
+        toReturn = false;
+        foreach(InputDevice device in deviceList.Values)
+        {
+            if(device.deviceId == newDevice.deviceId)
+            {
+                toReturn = true;
+                break;
+            }
+        }
+        return toReturn;
     }
 
     [Command]
