@@ -28,6 +28,7 @@ public class PlayerLobbyCursor : NetworkBehaviour
     public Image cursorImage;
     public Text usernameText;
 
+    private MenuSelection selectedButton;
     private PlayerInput playerInput;
     [SyncVar] private bool initialized = false;
     private InputDevice device;
@@ -136,9 +137,12 @@ public class PlayerLobbyCursor : NetworkBehaviour
         if (!Application.isFocused)
             return;
 
-        print("select called");
+        if (selectedButton != null)
+            selectedButton.SelectAction(this);
 
-        clientHandler.PrepareToStartGame();
+        //print("select called");
+
+        //clientHandler.PrepareToStartGame();
     }
 
     public void OnLeave(InputValue value)
@@ -162,33 +166,6 @@ public class PlayerLobbyCursor : NetworkBehaviour
         if (!Application.isFocused)
             return;
 
-        //screenPosX += moveVector.x * movementSpeed;
-        //screenPosY += moveVector.y * movementSpeed;
-
-        //screenPosX = Math.Min(.5f, Math.Max(-.5f, screenPosX));
-        //screenPosY = Math.Min(.5f, Math.Max(-.5f, screenPosY));
-
-        //float canvasWidth = canvas.transform.localScale.x * WIDTH;
-        //float canvasHeight = canvas.transform.localScale.y * HEIGHT;
-
-        //float transformX = Math.Min(canvasWidth / 2, Math.Max(canvasWidth / -2, canvasWidth * screenPosX));
-        //float transformY = Math.Min(canvasHeight / 2, Math.Max(canvasHeight / -2, canvasHeight * screenPosY));
-
-        //gameObject.transform.localScale = new Vector3(1, 1, 1);
-        //gameObject.transform.position = new Vector3(transformX, transformY, gameObject.transform.position.z);
-
-
-
-        //if (transformX > Screen.width - (Screen.width / 2))
-        //    transformX = Screen.width - (Screen.width / 2);
-        //else if (transformX < 0 - (Screen.width / 2))
-        //    transformX = 0 - (Screen.width / 2);
-
-        //if (transformY > Screen.height - (Screen.height / 2))
-        //    transformY = Screen.height - (Screen.height / 2);
-        //else if (transformY < 0 - (Screen.height / 2))
-        //    transformY = 0;
-
         float transformX = gameObject.transform.position.x + (moveVector.x * speed * canvas.transform.localScale.x);
         float transformY = gameObject.transform.position.y + (moveVector.y * speed * canvas.transform.localScale.y);
         transformX = Mathf.Clamp(transformX, 0, canvasRectTransform.rect.width * canvas.transform.localScale.x);
@@ -196,8 +173,37 @@ public class PlayerLobbyCursor : NetworkBehaviour
 
         gameObject.transform.position = new Vector2(transformX, transformY);
 
-        //gameObject.transform.position = new Vector3(Math.Min(WIDTH/2, Math.Max(-WIDTH/2, transformX)),
-        //    Math.Min(1080, Math.Max(0, transformY)), gameObject.transform.position.z);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        MenuSelection selection = other.GetComponent<MenuSelection>();
+        if (selection == null)
+            return;
+
+        if (other.GetComponent<PlayerLobbyCursor>() != null)
+            return;
+
+        if (selectedButton != selection)
+        {
+            //other.GetComponent<MenuSelection>().HoverAction(this);
+        }
+        selection.HoverAction(this);
+        selectedButton = selection;
+
+        other.GetComponent<Button>().image.color = other.GetComponent<Button>().colors.highlightedColor;
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.GetComponent<PlayerLobbyCursor>() != null)
+            return;
+
+        if (selectedButton != null)
+            selectedButton.ExitAction(this);
+        selectedButton = null;
+        other.GetComponent<Button>().image.color = new Color(1, 1, 1, 1);
+        //other.GetComponent<Image>().color = new Color(other.GetComponent<Image>().color.r, other.GetComponent<Image>().color.g, other.GetComponent<Image>().color.b, 1);
     }
 
 
