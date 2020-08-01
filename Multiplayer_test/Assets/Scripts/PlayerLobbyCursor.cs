@@ -37,6 +37,7 @@ public class PlayerLobbyCursor : NetworkBehaviour
 
     [SyncVar] private int playerIndex;
     [SyncVar] private bool keyboardControlled;
+    [SyncVar] public SelectedCharacter highlightedCharacter;
     private int gamepadDeviceId;
     private Vector2 moveVector;
 

@@ -211,8 +211,11 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         }
     }
 
-    public PlayerLobbyCursor GetKeyboardPlayer()
+    public PlayerLobbyCursor GetKeyboardPlayer(bool create = false)
     {
+        if (numKeyboards == 0 && create)
+            OnPlayerJoined(KEYBOARD);
+
         PlayerLobbyCursor toReturn = null;
         foreach(PlayerLobbyCursor cursor in playerCursors)
         {
