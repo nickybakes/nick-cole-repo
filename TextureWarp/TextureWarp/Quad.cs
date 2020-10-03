@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace TextureWarp
 {
-    class Quad
+    class Quad : Transform
     {
         public Vector2[] verts;
         public Texture2D quadTexture;
@@ -67,7 +67,7 @@ namespace TextureWarp
                 for (float j = 0; j <= 1; j += .001f)
                 {
                     spriteBatch.Draw(square, new Vector2((int)(finalLine.X * j + leftPoint.X),
-                        (int)(finalLine.Y * j + leftPoint.Y)), textureData[(int)(j*quadTexture.Width), (int)(i * quadTexture.Height)]);
+                        (int)(finalLine.Y * j + leftPoint.Y)), textureData[(int)(j*(quadTexture.Width-1)), (int)(i * quadTexture.Height)]);
                 }
             }
         }
