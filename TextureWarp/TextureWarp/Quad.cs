@@ -93,6 +93,5 @@ namespace TextureWarp
                     (int)(lineToStart.Y * i + start.Y)), Color.White);
             }
         }
-
     }
 }

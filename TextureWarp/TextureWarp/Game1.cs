@@ -29,6 +29,7 @@ namespace TextureWarp
 
         private ShapeDrawer drawer;
         private Quad quad;
+        private Camera activeCamera;
 
         private KeyboardState kbState;
         private KeyboardState previouskbState;
@@ -82,6 +83,7 @@ namespace TextureWarp
             arial18 = Content.Load<SpriteFont>("Arial18");
             checkerTexture = Content.Load<Texture2D>("checker");
 
+            activeCamera = new Camera();
             quad = new Quad(new Vector2(200, 30), new Vector2(1200, 70), new Vector2(250, 800), new Vector2(1200, 600), checkerTexture);
             //quad = new Quad(new Vector2(0, 0), new Vector2(1920, 0), new Vector2(0, 1080), new Vector2(1920, 1080), checkerTexture);
             // TODO: use this.Content to load your game content here
@@ -118,6 +120,7 @@ namespace TextureWarp
             if (kbState.IsKeyDown(Keys.D) && previouskbState.IsKeyUp(Keys.D))
                 quad.verts[0].X += nudgeAmount;
 
+            debug = activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)).ToString();
 
             base.Update(gameTime);
         }
@@ -140,6 +143,7 @@ namespace TextureWarp
             //quad.DrawEdges(spriteBatch, edgeTexture);
 
             quad.DrawQuad(spriteBatch, whiteSquare);
+            spriteBatch.Draw(whiteSquare, new Vector2(960, 540) + activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)), Color.DeepPink);
 
             spriteBatch.End();
 
