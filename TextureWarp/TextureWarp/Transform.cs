@@ -12,7 +12,14 @@ namespace TextureWarp
     class Transform
     {
         public Vector3 pos;
-        public Vector3 rot;
+        public Quaternion rot;
 
+        public Vector3 axisX
+        {
+            get
+            {
+                return new Vector3(1, 0, 0);
+            }
+        }
     }
 }

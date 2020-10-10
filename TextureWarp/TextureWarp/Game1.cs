@@ -16,6 +16,8 @@ namespace TextureWarp
     {
         public static string debug = "";
 
+        public static string debug2 = "";
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
@@ -120,7 +122,32 @@ namespace TextureWarp
             if (kbState.IsKeyDown(Keys.D) && previouskbState.IsKeyUp(Keys.D))
                 quad.verts[0].X += nudgeAmount;
 
-            debug = activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)).ToString();
+            //rotating camera with arrow keys
+            if (kbState.IsKeyDown(Keys.Up) && previouskbState.IsKeyUp(Keys.Up))
+                activeCamera.RotatePitch(1);
+            if (kbState.IsKeyDown(Keys.Down) && previouskbState.IsKeyUp(Keys.Down))
+                activeCamera.RotatePitch(-1);
+            if (kbState.IsKeyDown(Keys.Right) && previouskbState.IsKeyUp(Keys.Right))
+                activeCamera.RotateYaw(1);
+            if (kbState.IsKeyDown(Keys.Left) && previouskbState.IsKeyUp(Keys.Left))
+                activeCamera.RotateYaw(-1);
+
+            //increasing and decreasing camera fov
+            if (kbState.IsKeyDown(Keys.F) && previouskbState.IsKeyUp(Keys.F))
+                activeCamera.fov += 5;
+            if (kbState.IsKeyDown(Keys.V) && previouskbState.IsKeyUp(Keys.V))
+                activeCamera.fov -= 5;
+
+            //Quaternion.CreateFromYawPitchRoll();
+
+            //Quaternion q = ToQuaternion(MathHelper.ToRadians(45), MathHelper.ToRadians(2), MathHelper.ToRadians(50));
+            //debug = q.ToString();
+            //Vector3 e = ToEulerAngles(q);
+            //debug2 = MathHelper.ToDegrees(e.X) + ", " + MathHelper.ToDegrees(e.Y) + ", " + MathHelper.ToDegrees(e.Z);
+
+            //debug = activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)).ToString();
+            debug = activeCamera.PerspectiveProjection(new Vector3(0, 0, 60)).ToString();
+            debug2 = ToDegrees(ToEulerAngles(activeCamera.rot)).ToString();
 
             base.Update(gameTime);
         }
@@ -143,7 +170,8 @@ namespace TextureWarp
             //quad.DrawEdges(spriteBatch, edgeTexture);
 
             quad.DrawQuad(spriteBatch, whiteSquare);
-            spriteBatch.Draw(whiteSquare, new Vector2(960, 540) + activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)), Color.DeepPink);
+            //spriteBatch.Draw(whiteSquare, new Vector2(960, 540) + activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)), Color.DeepPink);
+            spriteBatch.Draw(whiteSquare, activeCamera.PerspectiveProjection(new Vector3(0, 0, 60)), Color.DeepPink);
 
             spriteBatch.End();
 
@@ -154,6 +182,7 @@ namespace TextureWarp
             spriteBatch.Draw(finalRenderTarget, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
 
             spriteBatch.DrawString(arial18, debug, Vector2.Zero, Color.White);
+            spriteBatch.DrawString(arial18, debug2, new Vector2(0, 25), Color.White);
             spriteBatch.End();
 
             // TODO: Add your drawing code here
@@ -178,6 +207,55 @@ namespace TextureWarp
             texture.SetData(data);
 
             return texture;
+        }
+
+        public static Vector3 ToDegrees(Vector3 e)
+        {
+            return new Vector3(MathHelper.ToDegrees(e.X), MathHelper.ToDegrees(e.Y), MathHelper.ToDegrees(e.Z));
+        }
+
+
+        public static Vector3 ToEulerAngles(Quaternion q)
+        {
+            Vector3 angles;
+
+            // roll (x-axis rotation)
+            float sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+            float cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+            angles.X = (float) Math.Atan2(sinr_cosp, cosr_cosp);
+
+            // pitch (y-axis rotation)
+            float sinp = 2 * (q.W * q.Y - q.Z * q.X);
+            if (Math.Abs(sinp) >= 1)
+                angles.Y = (float)(Math.PI / 2) * Math.Sign(sinp); // use 90 degrees if out of range
+            else
+                angles.Y = (float) Math.Asin(sinp);
+
+            // yaw (z-axis rotation)
+            float siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+            float cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+            angles.Z = (float) Math.Atan2(siny_cosp, cosy_cosp);
+
+            return angles;
+        }
+
+        public static Quaternion ToQuaternion(float yaw, float pitch, float roll) // yaw (Z), pitch (Y), roll (X)
+        {
+            // Abbreviations for the various angular functions
+            float cy = (float) Math.Cos(yaw * 0.5f);
+            float sy = (float) Math.Sin(yaw * 0.5f);
+            float cp = (float) Math.Cos(pitch * 0.5);
+            float sp = (float) Math.Sin(pitch * 0.5);
+            float cr = (float) Math.Cos(roll * 0.5);
+            float sr = (float) Math.Sin(roll * 0.5);
+
+            Quaternion q = new Quaternion();
+            q.W = cr * cp * cy + sr * sp * sy;
+            q.X = sr * cp * cy - cr * sp * sy;
+            q.Y = cr * sp * cy + sr * cp * sy;
+            q.Z = cr * cp * sy - sr * sp * cy;
+
+            return q;
         }
     }
 }
