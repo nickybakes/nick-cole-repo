@@ -17,8 +17,8 @@ namespace TextureWarp
 
         public static string[] debugText = new string[5];
         public static float mapBoundary = 3;
-        public static int resHeight = 576;
-        public static int resWidth = 1024;
+        public static int resHeight = 288;
+        public static int resWidth = 512;
         Vector3[] corners = new[] { new Vector3(-mapBoundary, mapBoundary,  mapBoundary), new Vector3(mapBoundary, mapBoundary,  mapBoundary), new Vector3(-mapBoundary, mapBoundary, - mapBoundary), new Vector3(mapBoundary, mapBoundary, - mapBoundary), new Vector3(-mapBoundary, -mapBoundary,  mapBoundary), new Vector3(mapBoundary, -mapBoundary,  mapBoundary), new Vector3(-mapBoundary, -mapBoundary, - mapBoundary), new Vector3(mapBoundary, -mapBoundary, - mapBoundary) };
 
         GraphicsDeviceManager graphics;
@@ -38,7 +38,12 @@ namespace TextureWarp
 
         private KeyboardState kbState;
         private KeyboardState previouskbState;
+        private MouseState mouseState;
+        private MouseState previousMouseState;
+        public float mouseSens = .5f;
         private SpriteFont arial18;
+
+        public bool paused = false;
 
         private Texture2D[] skyboxTextures;
         private Quad[] skyboxQuads;
@@ -103,7 +108,7 @@ namespace TextureWarp
             skyboxQuads = new Quad[6];
             skyboxQuads[0] = new Quad(corners[3], corners[2], corners[7], corners[6], skyboxTextures[0]);
             skyboxQuads[1] = new Quad(corners[4], corners[5], corners[6], corners[7], skyboxTextures[1]);
-            skyboxQuads[2] = new Quad(corners[6], corners[7], corners[2], corners[3], skyboxTextures[2]);
+            skyboxQuads[2] = new Quad(corners[6], corners[7], corners[2], corners[3], checkerTexture);
             skyboxQuads[3] = new Quad(corners[2], corners[0], corners[6], corners[4], skyboxTextures[3]);
             skyboxQuads[4] = new Quad(corners[1], corners[3], corners[5], corners[7], skyboxTextures[4]);
             skyboxQuads[5] = new Quad(corners[3], corners[2], corners[1], corners[0], skyboxTextures[5]);
@@ -111,6 +116,7 @@ namespace TextureWarp
             quad = new Quad(corners[3], corners[2], corners[1], corners[0], checkerTexture);
 
             activeCamera = new Camera();
+
             //quad = new Quad(new Vector2(200, 30), new Vector2(1200, 70), new Vector2(250, 800), new Vector2(1200, 600), checkerTexture);
             //quad = new Quad(new Vector2(0, 0), new Vector2(1920, 0), new Vector2(0, 1080), new Vector2(1920, 1080), checkerTexture);
             // TODO: use this.Content to load your game content here
@@ -132,11 +138,14 @@ namespace TextureWarp
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            //    Exit();
 
             previouskbState = kbState;
             kbState = Keyboard.GetState();
+
+            previousMouseState = mouseState;
+            mouseState = Mouse.GetState();
 
             //if (kbState.IsKeyDown(Keys.W) && previouskbState.IsKeyUp(Keys.W))
             //    quad.verts[0].Y -= nudgeAmount;
@@ -146,6 +155,17 @@ namespace TextureWarp
             //    quad.verts[0].X -= nudgeAmount;
             //if (kbState.IsKeyDown(Keys.D) && previouskbState.IsKeyUp(Keys.D))
             //    quad.verts[0].X += nudgeAmount;
+
+            if(kbState.IsKeyDown(Keys.Escape) && previouskbState.IsKeyUp(Keys.Escape))
+            {
+                paused = !paused;
+            }
+
+            if (paused)
+            {
+                debugText[0] = "PAUSED!";
+                return;
+            }
 
             if (kbState.IsKeyDown(Keys.W) && previouskbState.IsKeyUp(Keys.W))
                 activeCamera.MoveForward(1);
@@ -169,12 +189,25 @@ namespace TextureWarp
                 activeCamera.RotateYaw(1);
             if (kbState.IsKeyDown(Keys.Left) && previouskbState.IsKeyUp(Keys.Left))
                 activeCamera.RotateYaw(-1);
+            if (kbState.IsKeyDown(Keys.J) && previouskbState.IsKeyUp(Keys.J))
+                activeCamera.RotateRoll(1);
+            if (kbState.IsKeyDown(Keys.K) && previouskbState.IsKeyUp(Keys.K))
+                activeCamera.RotateRoll(-1);
 
             //increasing and decreasing camera fov
             if (kbState.IsKeyDown(Keys.F) && previouskbState.IsKeyUp(Keys.F))
                 activeCamera.fov += 5;
             if (kbState.IsKeyDown(Keys.V) && previouskbState.IsKeyUp(Keys.V))
                 activeCamera.fov -= 5;
+
+            Vector2 middleOfScreen = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
+            float xRot = ((mouseState.Position.X - middleOfScreen.X)/50) * mouseSens;
+            float yRot = ((middleOfScreen.Y - mouseState.Position.Y)/50) * mouseSens;
+            activeCamera.RotatePitch(yRot);
+            activeCamera.RotateYaw(xRot);
+
+            Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
+
 
             //Quaternion.CreateFromYawPitchRoll();
 
@@ -185,7 +218,7 @@ namespace TextureWarp
 
             //debug = activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)).ToString();
             debugText[0] = "Point (0, 0, 30) projected on screen: " + activeCamera.PerspectiveProjection(new Vector3(0, 0, 30)).ToString();
-            debugText[1] = "Camera rotation: " + ToDegrees(ToEulerAngles(activeCamera.rot)).ToString();
+            debugText[1] = "Camera rotation: " + ToDegrees(activeCamera.rot).ToString();
             debugText[2] = "Camera position: " + activeCamera.pos.ToString();
             debugText[3] = "Camera FoV: " + activeCamera.fov.ToString();
 
@@ -216,7 +249,15 @@ namespace TextureWarp
             //{
             //    skyboxQuads[i].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
             //}
+            
+
+            skyboxQuads[2].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+            //skyboxQuads[3].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+
             quad.DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+
+            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(0, 0, 30)), Color.DeepPink);
+            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(2, 0, 60)), Color.DeepPink);
 
             for (int i = 0; i < corners.Length; i++)
             {
@@ -224,12 +265,6 @@ namespace TextureWarp
                 spriteBatch.Draw(vertHandleTexture, pos, Color.Black);
                 spriteBatch.DrawString(arial18, i.ToString(), pos, Color.White);
             }
-
-            skyboxQuads[2].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
-            //skyboxQuads[3].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
-
-            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(0, 0, 30)), Color.DeepPink);
-            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(2, 0, 60)), Color.DeepPink);
 
             spriteBatch.End();
 
@@ -274,6 +309,8 @@ namespace TextureWarp
         {
             return new Vector3(MathHelper.ToDegrees(e.X), MathHelper.ToDegrees(e.Y), MathHelper.ToDegrees(e.Z));
         }
+
+
 
 
         public static Vector3 ToEulerAngles(Quaternion q)

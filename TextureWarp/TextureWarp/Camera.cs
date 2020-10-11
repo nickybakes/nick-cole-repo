@@ -41,16 +41,41 @@ namespace TextureWarp
 
         public void RotatePitch(float degrees)
         {
-            Vector3 e = Game1.ToEulerAngles(rot);
-            e.X -= MathHelper.ToRadians(degrees);
-            rot = Game1.ToQuaternion(e.Z, e.Y, e.X);
+            rot.X -= MathHelper.ToRadians(degrees);
+            while (rot.X < 0)
+            {
+                rot.X += MathHelper.ToRadians(360);
+            }
+            while (rot.X >= MathHelper.ToRadians(360))
+            {
+                rot.X -= MathHelper.ToRadians(360);
+            }
         }
 
         public void RotateYaw(float degrees)
         {
-            Vector3 e = Game1.ToEulerAngles(rot);
-            e.Y += MathHelper.ToRadians(degrees);
-            rot = Game1.ToQuaternion(e.Z, e.Y, e.X);
+            rot.Y += MathHelper.ToRadians(degrees);
+            while (rot.Y < 0)
+            {
+                rot.Y += MathHelper.ToRadians(360);
+            }
+            while (rot.Y >= MathHelper.ToRadians(360))
+            {
+                rot.Y -= MathHelper.ToRadians(360);
+            }
+        }
+
+        public void RotateRoll(float degrees)
+        {
+            rot.Z += MathHelper.ToRadians(degrees);
+            while (rot.Z < 0)
+            {
+                rot.Z += MathHelper.ToRadians(360);
+            }
+            while (rot.Z >= MathHelper.ToRadians(360))
+            {
+                rot.Z -= MathHelper.ToRadians(360);
+            }
         }
 
         public void MoveForward(float amount)
@@ -85,7 +110,8 @@ namespace TextureWarp
         {
             Vector3 a = point;
             Vector3 c = pos;
-            Vector3 theta = Game1.ToEulerAngles(rot);
+            //Vector3 theta = Game1.ToEulerAngles(Game1.ToQuaternion(rot.Z, rot.Y, rot.X));
+            Vector3 theta = rot;
             Vector3 e = ScreenPoint;
 
             Vector3 d = new Vector3();
