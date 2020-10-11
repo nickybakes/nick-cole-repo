@@ -12,9 +12,28 @@ namespace TextureWarp
 {
     class Quad : Transform
     {
+        public Vector3[] verts3d;
         public Vector2[] verts;
         public Texture2D quadTexture;
         public Color[,] textureData;
+
+        public Quad(Vector3 topLeft, Vector3 topRight, Vector3 bottomLeft, Vector3 bottomRight, Texture2D quadTexture)
+        {
+            verts3d = new[] { topLeft, topRight, bottomLeft, bottomRight };
+            this.quadTexture = quadTexture;
+            Color[] textureDataRaw = new Color[this.quadTexture.Width * this.quadTexture.Height];
+            quadTexture.GetData<Color>(textureDataRaw);
+
+            textureData = new Color[quadTexture.Width, quadTexture.Height];
+            for (int y = 0; y < quadTexture.Height; y++)
+            {
+                for (int x = 0; x < quadTexture.Width; x++)
+                {
+                    // Assumes row major ordering of the array.
+                    textureData[x, y] = textureDataRaw[y * quadTexture.Height + x];
+                }
+            }
+        }
 
         public Quad(Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight, Texture2D quadTexture)
         {
@@ -50,6 +69,17 @@ namespace TextureWarp
             DrawLine(spriteBatch, verts[2], verts[3], texture);
         }
 
+        public void DrawQuad3D(SpriteBatch spriteBatch, Camera camera, Texture2D square)
+        {
+            verts = new Vector2[4];
+            for(int i = 0; i < verts.Length; i++)
+            {
+                verts[i] = camera.PerspectiveProjection(verts3d[i]);
+            }
+
+            this.DrawQuad(spriteBatch, square);
+        }
+
         public void DrawQuad(SpriteBatch spriteBatch, Texture2D square)
         {
             //float i1 = 0;
@@ -67,7 +97,7 @@ namespace TextureWarp
                 for (float j = 0; j <= 1; j += .001f)
                 {
                     spriteBatch.Draw(square, new Vector2((int)(finalLine.X * j + leftPoint.X),
-                        (int)(finalLine.Y * j + leftPoint.Y)), textureData[(int)(j*(quadTexture.Width-1)), (int)(i * quadTexture.Height)]);
+                        (int)(finalLine.Y * j + leftPoint.Y)), textureData[(int)(j*quadTexture.Width), (int)(i * quadTexture.Height)]);
                 }
             }
         }

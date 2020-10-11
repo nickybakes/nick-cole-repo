@@ -11,7 +11,7 @@ namespace TextureWarp
 {
     class Camera : Transform
     {
-        public float fov = 45;
+        public float fov = 90;
         public float clipWidth = 1600;
         public float clipHeight = 900;
 
@@ -24,7 +24,8 @@ namespace TextureWarp
         {
             get
             {
-                return new Vector3(pos.X, pos.Y, pos.Z + 1 / (float)(Math.Tan(MathHelper.ToRadians(fov)/2)));
+                return new Vector3(pos.X, pos.Y, 1 / (float)(Math.Tan(MathHelper.ToRadians(fov) / 2)));
+                //return new Vector3(pos.X - (float)(Math.Sin(MathHelper.ToRadians(eulerAngles.X))*fov), pos.Y + (float)(Math.Cos(MathHelper.ToRadians(eulerAngles.X)) * fov), 1 / (float)(Math.Tan(MathHelper.ToRadians(fov)/2)));
             }
         }
 
@@ -41,7 +42,7 @@ namespace TextureWarp
         public void RotatePitch(float degrees)
         {
             Vector3 e = Game1.ToEulerAngles(rot);
-            e.X += MathHelper.ToRadians(degrees);
+            e.X -= MathHelper.ToRadians(degrees);
             rot = Game1.ToQuaternion(e.Z, e.Y, e.X);
         }
 
@@ -50,6 +51,22 @@ namespace TextureWarp
             Vector3 e = Game1.ToEulerAngles(rot);
             e.Y += MathHelper.ToRadians(degrees);
             rot = Game1.ToQuaternion(e.Z, e.Y, e.X);
+        }
+
+        public void MoveForward(float amount)
+        {
+            Vector3 movement = rot.Length() * Vector3.Forward;
+            pos.Z -= amount;
+        }
+
+        public void MoveSide(float amount)
+        {
+            pos.X -= amount;
+        }
+
+        public void MoveUp(float amount)
+        {
+            pos.Y += amount;
         }
 
         public Vector2 Project3DPointToScreen(Vector3 point)
@@ -79,11 +96,10 @@ namespace TextureWarp
             d.Z = (float)(Math.Cos(theta.X) * (Math.Cos(theta.Y) * (a.Z - c.Z) + Math.Sin(theta.Y) * (Math.Sin(theta.Z) * (a.Y - c.Y) + Math.Cos(theta.Z) * (a.X - c.X))) - Math.Sin(theta.X) * (Math.Cos(theta.Z) * (a.Y - c.Y) - Math.Sin(theta.Z) * (a.X - c.X)));
 
             Vector2 b = new Vector2();
+            b.X = ((d.X - e.X) * (e.Z / d.Z)) +.5f;
+            b.Y = ((d.Y - e.Y) * (e.Z / d.Z)) +.5f;
 
-            b.X = (d.X + .5f) * (e.Z / d.Z);
-            b.Y = (d.Y + .5f) * (e.Z / d.Z);
-
-            return new Vector2(1920 * b.X, 1080 * b.Y);
+            return new Vector2(Game1.resWidth * b.X, -Game1.resHeight * b.Y);
         }
 
         

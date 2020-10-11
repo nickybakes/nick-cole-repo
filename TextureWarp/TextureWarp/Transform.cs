@@ -14,6 +14,14 @@ namespace TextureWarp
         public Vector3 pos;
         public Quaternion rot;
 
+        public Vector3 eulerAngles
+        {
+            get
+            {
+                return Game1.ToEulerAngles(rot);
+            }
+        }
+
         public Vector3 axisX
         {
             get

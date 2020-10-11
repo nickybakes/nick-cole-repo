@@ -14,9 +14,12 @@ namespace TextureWarp
     /// </summary>
     public class Game1 : Game
     {
-        public static string debug = "";
 
-        public static string debug2 = "";
+        public static string[] debugText = new string[5];
+        public static float mapBoundary = 3;
+        public static int resHeight = 576;
+        public static int resWidth = 1024;
+        Vector3[] corners = new[] { new Vector3(-mapBoundary, mapBoundary,  mapBoundary), new Vector3(mapBoundary, mapBoundary,  mapBoundary), new Vector3(-mapBoundary, mapBoundary, - mapBoundary), new Vector3(mapBoundary, mapBoundary, - mapBoundary), new Vector3(-mapBoundary, -mapBoundary,  mapBoundary), new Vector3(mapBoundary, -mapBoundary,  mapBoundary), new Vector3(-mapBoundary, -mapBoundary, - mapBoundary), new Vector3(mapBoundary, -mapBoundary, - mapBoundary) };
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -36,6 +39,9 @@ namespace TextureWarp
         private KeyboardState kbState;
         private KeyboardState previouskbState;
         private SpriteFont arial18;
+
+        private Texture2D[] skyboxTextures;
+        private Quad[] skyboxQuads;
 
         private Texture2D checkerTexture;
 
@@ -60,12 +66,12 @@ namespace TextureWarp
 
             //setting window properties. it can be resized, but at first we want it at a predetermined size
             Window.AllowUserResizing = true;
-            graphics.PreferredBackBufferHeight = 1080;
-            graphics.PreferredBackBufferWidth = 1920;
+            graphics.PreferredBackBufferHeight = resHeight;
+            graphics.PreferredBackBufferWidth = resWidth;
             System.Windows.Forms.Form form = (System.Windows.Forms.Form)System.Windows.Forms.Form.FromHandle(Window.Handle);
             form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
 
-            finalRenderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
+            finalRenderTarget = new RenderTarget2D(GraphicsDevice, resWidth, resHeight);
             vertHandleTexture = CreateTexture(GraphicsDevice, 32, 32, Color.White);
             edgeTexture = CreateTexture(GraphicsDevice, 8, 8, Color.Yellow);
             whiteSquare = CreateTexture(GraphicsDevice, 4, 4, Color.White);
@@ -85,8 +91,27 @@ namespace TextureWarp
             arial18 = Content.Load<SpriteFont>("Arial18");
             checkerTexture = Content.Load<Texture2D>("checker");
 
+            skyboxTextures = new Texture2D[6];
+            skyboxTextures[0] = Content.Load<Texture2D>("sky_trainyard_01bk");
+            skyboxTextures[1] = Content.Load<Texture2D>("sky_trainyard_01dn");
+            skyboxTextures[2] = Content.Load<Texture2D>("sky_trainyard_01ft");
+            skyboxTextures[3] = Content.Load<Texture2D>("sky_trainyard_01lf");
+            skyboxTextures[4] = Content.Load<Texture2D>("sky_trainyard_01rt");
+            skyboxTextures[5] = Content.Load<Texture2D>("sky_trainyard_01up");
+
+            //Vector3[] corners = new[] { new Vector3(-mapBoundary, mapBoundary, 5*mapBoundary), new Vector3(mapBoundary, mapBoundary, 5 * mapBoundary), new Vector3(-mapBoundary, mapBoundary, -5 * mapBoundary), new Vector3(mapBoundary, mapBoundary, -5 * mapBoundary), new Vector3(-mapBoundary, -mapBoundary, 5 * mapBoundary), new Vector3(mapBoundary, -mapBoundary, 5 * mapBoundary), new Vector3(-mapBoundary, -mapBoundary, -5 * mapBoundary), new Vector3(mapBoundary, -mapBoundary, -5 * mapBoundary) };
+            skyboxQuads = new Quad[6];
+            skyboxQuads[0] = new Quad(corners[3], corners[2], corners[7], corners[6], skyboxTextures[0]);
+            skyboxQuads[1] = new Quad(corners[4], corners[5], corners[6], corners[7], skyboxTextures[1]);
+            skyboxQuads[2] = new Quad(corners[6], corners[7], corners[2], corners[3], skyboxTextures[2]);
+            skyboxQuads[3] = new Quad(corners[2], corners[0], corners[6], corners[4], skyboxTextures[3]);
+            skyboxQuads[4] = new Quad(corners[1], corners[3], corners[5], corners[7], skyboxTextures[4]);
+            skyboxQuads[5] = new Quad(corners[3], corners[2], corners[1], corners[0], skyboxTextures[5]);
+
+            quad = new Quad(corners[3], corners[2], corners[1], corners[0], checkerTexture);
+
             activeCamera = new Camera();
-            quad = new Quad(new Vector2(200, 30), new Vector2(1200, 70), new Vector2(250, 800), new Vector2(1200, 600), checkerTexture);
+            //quad = new Quad(new Vector2(200, 30), new Vector2(1200, 70), new Vector2(250, 800), new Vector2(1200, 600), checkerTexture);
             //quad = new Quad(new Vector2(0, 0), new Vector2(1920, 0), new Vector2(0, 1080), new Vector2(1920, 1080), checkerTexture);
             // TODO: use this.Content to load your game content here
         }
@@ -113,14 +138,27 @@ namespace TextureWarp
             previouskbState = kbState;
             kbState = Keyboard.GetState();
 
+            //if (kbState.IsKeyDown(Keys.W) && previouskbState.IsKeyUp(Keys.W))
+            //    quad.verts[0].Y -= nudgeAmount;
+            //if (kbState.IsKeyDown(Keys.S) && previouskbState.IsKeyUp(Keys.S))
+            //    quad.verts[0].Y += nudgeAmount;
+            //if (kbState.IsKeyDown(Keys.A) && previouskbState.IsKeyUp(Keys.A))
+            //    quad.verts[0].X -= nudgeAmount;
+            //if (kbState.IsKeyDown(Keys.D) && previouskbState.IsKeyUp(Keys.D))
+            //    quad.verts[0].X += nudgeAmount;
+
             if (kbState.IsKeyDown(Keys.W) && previouskbState.IsKeyUp(Keys.W))
-                quad.verts[0].Y -= nudgeAmount;
+                activeCamera.MoveForward(1);
             if (kbState.IsKeyDown(Keys.S) && previouskbState.IsKeyUp(Keys.S))
-                quad.verts[0].Y += nudgeAmount;
+                activeCamera.MoveForward(-1);
             if (kbState.IsKeyDown(Keys.A) && previouskbState.IsKeyUp(Keys.A))
-                quad.verts[0].X -= nudgeAmount;
+                activeCamera.MoveSide(-1);
             if (kbState.IsKeyDown(Keys.D) && previouskbState.IsKeyUp(Keys.D))
-                quad.verts[0].X += nudgeAmount;
+                activeCamera.MoveSide(1);
+            if (kbState.IsKeyDown(Keys.T) && previouskbState.IsKeyUp(Keys.T))
+                activeCamera.MoveUp(-1);
+            if (kbState.IsKeyDown(Keys.G) && previouskbState.IsKeyUp(Keys.G))
+                activeCamera.MoveUp(1);
 
             //rotating camera with arrow keys
             if (kbState.IsKeyDown(Keys.Up) && previouskbState.IsKeyUp(Keys.Up))
@@ -146,8 +184,10 @@ namespace TextureWarp
             //debug2 = MathHelper.ToDegrees(e.X) + ", " + MathHelper.ToDegrees(e.Y) + ", " + MathHelper.ToDegrees(e.Z);
 
             //debug = activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)).ToString();
-            debug = activeCamera.PerspectiveProjection(new Vector3(0, 0, 60)).ToString();
-            debug2 = ToDegrees(ToEulerAngles(activeCamera.rot)).ToString();
+            debugText[0] = "Point (0, 0, 30) projected on screen: " + activeCamera.PerspectiveProjection(new Vector3(0, 0, 30)).ToString();
+            debugText[1] = "Camera rotation: " + ToDegrees(ToEulerAngles(activeCamera.rot)).ToString();
+            debugText[2] = "Camera position: " + activeCamera.pos.ToString();
+            debugText[3] = "Camera FoV: " + activeCamera.fov.ToString();
 
             base.Update(gameTime);
         }
@@ -169,9 +209,27 @@ namespace TextureWarp
 
             //quad.DrawEdges(spriteBatch, edgeTexture);
 
-            quad.DrawQuad(spriteBatch, whiteSquare);
+            //quad.DrawQuad(spriteBatch, whiteSquare);
             //spriteBatch.Draw(whiteSquare, new Vector2(960, 540) + activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)), Color.DeepPink);
-            spriteBatch.Draw(whiteSquare, activeCamera.PerspectiveProjection(new Vector3(0, 0, 60)), Color.DeepPink);
+
+            //for(int i = 0; i < skyboxQuads.Length; i++)
+            //{
+            //    skyboxQuads[i].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+            //}
+            quad.DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+
+            for (int i = 0; i < corners.Length; i++)
+            {
+                Vector2 pos = activeCamera.PerspectiveProjection(corners[i]);
+                spriteBatch.Draw(vertHandleTexture, pos, Color.Black);
+                spriteBatch.DrawString(arial18, i.ToString(), pos, Color.White);
+            }
+
+            skyboxQuads[2].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+            //skyboxQuads[3].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+
+            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(0, 0, 30)), Color.DeepPink);
+            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(2, 0, 60)), Color.DeepPink);
 
             spriteBatch.End();
 
@@ -181,10 +239,13 @@ namespace TextureWarp
 
             spriteBatch.Draw(finalRenderTarget, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
 
-            spriteBatch.DrawString(arial18, debug, Vector2.Zero, Color.White);
-            spriteBatch.DrawString(arial18, debug2, new Vector2(0, 25), Color.White);
+            for(int i = 0; i < debugText.Length; i++)
+            {
+                if(debugText[i] != null)
+                    spriteBatch.DrawString(arial18, debugText[i], new Vector2(0, i*25), Color.White);
+            }
             spriteBatch.End();
-
+            
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
