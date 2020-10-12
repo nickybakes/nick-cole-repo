@@ -116,7 +116,6 @@ namespace TextureWarp
             quad = new Quad(corners[3], corners[2], corners[1], corners[0], checkerTexture);
 
             activeCamera = new Camera();
-
             //quad = new Quad(new Vector2(200, 30), new Vector2(1200, 70), new Vector2(250, 800), new Vector2(1200, 600), checkerTexture);
             //quad = new Quad(new Vector2(0, 0), new Vector2(1920, 0), new Vector2(0, 1080), new Vector2(1920, 1080), checkerTexture);
             // TODO: use this.Content to load your game content here
@@ -201,8 +200,8 @@ namespace TextureWarp
                 activeCamera.fov -= 5;
 
             Vector2 middleOfScreen = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
-            float xRot = ((mouseState.Position.X - middleOfScreen.X)/50) * mouseSens;
-            float yRot = ((middleOfScreen.Y - mouseState.Position.Y)/50) * mouseSens;
+            float xRot = ((mouseState.Position.X - middleOfScreen.X)/30) * mouseSens;
+            float yRot = ((middleOfScreen.Y - mouseState.Position.Y)/30) * mouseSens;
             activeCamera.RotatePitch(yRot);
             activeCamera.RotateYaw(xRot);
 
@@ -217,10 +216,10 @@ namespace TextureWarp
             //debug2 = MathHelper.ToDegrees(e.X) + ", " + MathHelper.ToDegrees(e.Y) + ", " + MathHelper.ToDegrees(e.Z);
 
             //debug = activeCamera.Project3DPointToScreen(new Vector3(200, 300, 30)).ToString();
-            debugText[0] = "Point (0, 0, 30) projected on screen: " + activeCamera.PerspectiveProjection(new Vector3(0, 0, 30)).ToString();
+            debugText[0] = "Point (0, 0, 30) projected on screen: " + activeCamera.NickPerspectiveProjection(corners[7]).ToString();
             debugText[1] = "Camera rotation: " + ToDegrees(activeCamera.rot).ToString();
             debugText[2] = "Camera position: " + activeCamera.pos.ToString();
-            debugText[3] = "Camera FoV: " + activeCamera.fov.ToString();
+            debugText[3] = "Camera FoV: " + activeCamera.fov.ToString() + ", raw: " + activeCamera.ScreenPoint.Z;
 
             base.Update(gameTime);
         }
@@ -251,20 +250,35 @@ namespace TextureWarp
             //}
             
 
-            skyboxQuads[2].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+            //skyboxQuads[2].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
             //skyboxQuads[3].DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
 
-            quad.DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
+            //quad.DrawQuad3D(spriteBatch, activeCamera, whiteSquare);
 
-            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(0, 0, 30)), Color.DeepPink);
-            spriteBatch.Draw(vertHandleTexture, activeCamera.PerspectiveProjection(new Vector3(2, 0, 60)), Color.DeepPink);
+            spriteBatch.Draw(vertHandleTexture, activeCamera.NickPerspectiveProjection(new Vector3(0, 0, 30)), Color.DeepPink);
+            //spriteBatch.Draw(vertHandleTexture, activeCamera.MatrixPerspectiveProjection(new Vector3(2, 0, 60)), Color.DeepPink);
+
+            Vector2[] cornerProjections = new Vector2[corners.Length];
 
             for (int i = 0; i < corners.Length; i++)
             {
-                Vector2 pos = activeCamera.PerspectiveProjection(corners[i]);
-                spriteBatch.Draw(vertHandleTexture, pos, Color.Black);
-                spriteBatch.DrawString(arial18, i.ToString(), pos, Color.White);
+                cornerProjections[i] = activeCamera.NickPerspectiveProjection(corners[i]);
+                spriteBatch.Draw(vertHandleTexture, cornerProjections[i], Color.Black);
+                spriteBatch.DrawString(arial18, i.ToString(), cornerProjections[i], Color.White);
             }
+
+            DrawLine(spriteBatch, cornerProjections[0], cornerProjections[1], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[0], cornerProjections[2], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[0], cornerProjections[4], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[1], cornerProjections[5], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[1], cornerProjections[3], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[3], cornerProjections[2], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[3], cornerProjections[7], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[7], cornerProjections[6], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[7], cornerProjections[5], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[6], cornerProjections[2], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[6], cornerProjections[4], edgeTexture);
+            DrawLine(spriteBatch, cornerProjections[4], cornerProjections[5], edgeTexture);
 
             spriteBatch.End();
 
@@ -310,7 +324,17 @@ namespace TextureWarp
             return new Vector3(MathHelper.ToDegrees(e.X), MathHelper.ToDegrees(e.Y), MathHelper.ToDegrees(e.Z));
         }
 
+        public static void DrawLine(SpriteBatch spriteBatch, Vector2 start, Vector2 end, Texture2D texture)
+        {
+            Vector2 lineToStart = end - start;
 
+            for (float i = 0; i < 1; i += .005f)
+            {
+                //increment throug the line and draw small sprites to generate a visual line
+                spriteBatch.Draw(texture, new Vector2((int)(lineToStart.X * i + start.X),
+                    (int)(lineToStart.Y * i + start.Y)), Color.White);
+            }
+        }
 
 
         public static Vector3 ToEulerAngles(Quaternion q)
