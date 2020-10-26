@@ -55,26 +55,28 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     public const int MAX_PLAYERS = 8;
 
     public const int EVENT_NONE = 0, EVENT_PLAYER_ULT = 1;
+    public const int COUNTDOWN_LENGTH = 5;
 
     public Text UIText, CountdownText;
 
-    public NeonHeightsLobbyClient2 localClient;
-
-    public int connectionId;
-    public const int COUNTDOWN_LENGTH = 5;
-    [SyncVar] public string nextLevel;
-    [SyncVar] public int numberOfPlayers;
-    [SyncVar] public bool gameStarted;
     [SyncVar] public int countdownTimer;
     [SyncVar] public int curEvent, lastEvent;
     [SyncVar] public int eventParams;
     float curCountdownTime = 0, eventTimer = -1;
+
+    public NeonHeightsLobbyManager networkManager;
+    public NeonHeightsSpawnManager spawnManager;
+    public NeonHeightsLobbyClient2 localClient;
+    public int connectionId;
+    
     public SyncListPlayer players = new SyncListPlayer();
     public SyncListBool playersAdded = new SyncListBool();
     public SyncListInt playerConnectionIDs = new SyncListInt();
     public GameObject[] playerObjects;
-    public NeonHeightsLobbyManager networkManager;
-    public NeonHeightsSpawnManager spawnManager; 
+    [SyncVar] public int numberOfPlayers;
+
+    [SyncVar] public string nextLevel;
+    [SyncVar] public bool gameStarted;
 
     // Start is called before the first frame update
     void Start()
@@ -145,6 +147,8 @@ public class NeonHeightsDataHandler : NetworkBehaviour
                 break;
         }
     }
+
+    // Event/ Countdown stuff, can be changed/ removed pretty easily
 
     void Update()
     {
@@ -269,6 +273,8 @@ public class NeonHeightsDataHandler : NetworkBehaviour
         }
     }
 
+    // Pre Game Lobby
+
     void UpdateUIText()
     {
         if (UIText != null)
@@ -386,6 +392,36 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             RemovePlayer(curPlayer);
     }
 
+    public void SetCharacter(int pNum, SelectedCharacter toSet)
+    {
+        Player curPlayer = GetPlayer(pNum);
+        if (curPlayer == null)
+            return;
+
+        curPlayer.character = toSet;
+
+    }
+
+    public void SetTeam(int pNum, TeamJoined toSet)
+    {
+        Player curPlayer = GetPlayer(pNum);
+        if (curPlayer == null)
+            return;
+
+        curPlayer.team = toSet;
+    }
+
+    // Game
+
+    public void PrepareToStartGame()
+    {
+        print("Data Handler PrepareToStartGame called");
+        UIText = null;
+        gameStarted = true;
+        playerObjects = new GameObject[] { null, null, null, null, null, null, null, null };
+        networkManager.StartGame();
+    }
+
     public List<int> GetPlayerNumsForClient(int connID)
     {
         List<int> toReturn = new List<int>();
@@ -400,15 +436,6 @@ public class NeonHeightsDataHandler : NetworkBehaviour
     public void checkForErrors()
     {
         print("Nothing here yet");
-    }
-
-    public void PrepareToStartGame()
-    {
-        print("Data Handler PrepareToStartGame called");
-        UIText = null;
-        gameStarted = true;
-        playerObjects = new GameObject[]{null, null, null, null, null, null, null, null};
-        networkManager.StartGame();
     }
 
     public Vector3 GetPlayerSpawn(int pNum)
@@ -442,25 +469,6 @@ public class NeonHeightsDataHandler : NetworkBehaviour
             }
         }
         return toReturn;
-    }
-
-    public void SetCharacter(int pNum, SelectedCharacter toSet)
-    {
-        Player curPlayer = GetPlayer(pNum);
-        if (curPlayer == null)
-            return;
-
-        curPlayer.character = toSet;
-
-    }
-
-    public void SetTeam(int pNum, TeamJoined toSet)
-    {
-        Player curPlayer = GetPlayer(pNum);
-        if (curPlayer == null)
-            return;
-
-        curPlayer.team = toSet;
     }
 
     public void PlayerUltimate(int pNum)

@@ -9,17 +9,38 @@ using UnityEngine.SceneManagement;
 public class NeonHeightsLobbyClient2 : NetworkBehaviour
 {
     public const int GAMEPAD = 1, KEYBOARD = 0;
+
     private NeonHeightsDataHandler dataHandler;
     public int connectionId;
+
+
     private int numGamePads, numKeyboards;
-    public GameObject PlayerCursor;
-    public GameObject Player;
+    private Dictionary<int, InputDevice> deviceList;
+
     public InputAction anyButtonPressedGamePad, anyButtonPressedKeyboard;
     private List<PlayerLobbyCursor> playerCursors;
-    private List<NeonHeightsPlayer> players;
-    private Dictionary<int, InputDevice> deviceList;
+    public GameObject PlayerCursor;
+
     private bool gameStarted;
+
+    private List<NeonHeightsPlayer> players;
+    public GameObject Player;
     public bool playersCanMove;
+
+
+
+    // Debug
+
+
+    public void serverTest(int connID)
+    {
+        print("server test");
+        print("Given connection id: " + connID);
+        print("My connection id: " + connectionId);
+    }
+
+    //Pregame Lobby
+
     // Start is called before the first frame update
     void Start()
     {
@@ -63,13 +84,6 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         anyButtonPressedKeyboard.performed += ctx => OnPlayerJoined(0);
         anyButtonPressedKeyboard.Enable();
 
-    }
-
-    public void serverTest(int connID)
-    {
-        print("server test");
-        print("Given connection id: " + connID);
-        print("My connection id: " + connectionId);
     }
 
     [Command]
@@ -135,17 +149,6 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         {
             Destroy(curCursor);
         }
-    }
-
-    [Command]
-    void CmdAddPlayerInGame(GameObject owner, int pNum)
-    {
-        print("CmdAddPlayerInGameCalled");
-        ClientScene.RegisterPrefab(Player);
-        GameObject curPlayer = Instantiate(Player, dataHandler.GetPlayerSpawn(pNum), Quaternion.identity);
-        curPlayer.GetComponent<NeonHeightsPlayer>().InitializePlayer(pNum);
-        NetworkServer.Spawn(curPlayer, owner);
-        dataHandler.AddPlayerObject(curPlayer, pNum);
     }
 
     [Command]
@@ -228,29 +231,6 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
         return toReturn;
     }
 
-    public void OnSceneChanged(Scene current, Scene next)
-    {
-        if (!isLocalPlayer)
-            return;
-
-        print("Scene changed spotted in lobbyClient");
-
-        print(dataHandler.gameStarted);
-
-        gameStarted = true;
-        AddAllCharacters();
-    }
-
-    public void AddAllCharacters()
-    {
-        print("AddAllCharacters called: " + deviceList.Count);
-        foreach(KeyValuePair<int, InputDevice> player in deviceList)
-        {
-            print("Player: " + player);
-            CmdAddPlayerInGame(this.gameObject, player.Key);
-        }
-    }
-
     public void PrepareToStartGame()
     {
         print("prepareToStartGame called");
@@ -296,6 +276,45 @@ public class NeonHeightsLobbyClient2 : NetworkBehaviour
     {
         print("CmdPrepareToStartGame");
         dataHandler.PrepareToStartGame();
+    }
+
+    // Game 
+
+
+
+
+    public void OnSceneChanged(Scene current, Scene next)
+    {
+        if (!isLocalPlayer)
+            return;
+
+        print("Scene changed spotted in lobbyClient");
+
+        print(dataHandler.gameStarted);
+
+        gameStarted = true;
+        AddAllCharacters();
+    }
+
+    public void AddAllCharacters()
+    {
+        print("AddAllCharacters called: " + deviceList.Count);
+        foreach (KeyValuePair<int, InputDevice> player in deviceList)
+        {
+            print("Player: " + player);
+            CmdAddPlayerInGame(this.gameObject, player.Key);
+        }
+    }
+
+    [Command]
+    void CmdAddPlayerInGame(GameObject owner, int pNum)
+    {
+        print("CmdAddPlayerInGameCalled");
+        ClientScene.RegisterPrefab(Player);
+        GameObject curPlayer = Instantiate(Player, dataHandler.GetPlayerSpawn(pNum), Quaternion.identity);
+        curPlayer.GetComponent<NeonHeightsPlayer>().InitializePlayer(pNum);
+        NetworkServer.Spawn(curPlayer, owner);
+        dataHandler.AddPlayerObject(curPlayer, pNum);
     }
 
     public void PlayerUltimate(int pNum)
